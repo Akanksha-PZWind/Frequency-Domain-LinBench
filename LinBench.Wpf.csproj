@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ApplicationIcon>Assets\linbench.ico</ApplicationIcon>
+    <AssemblyName>LinBench.Wpf</AssemblyName>
+    <RootNamespace>LinBench.Wpf</RootNamespace>
+    <StartupObject>LinBench.Wpf.App</StartupObject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\linbench.ico" />
+    <Resource Include="Assets\linbench.png" />
+  </ItemGroup>
+
+  <!-- Not part of the app: Python caches, virtual environments, stray tool folders -->
+  <ItemGroup>
+    <None Remove="Backend\**\__pycache__\**" />
+    <None Remove="Backend\**\*.pyc" />
+    <None Remove="Backend\.venv\**;Backend\venv\**;Backend\env\**;Backend\.venv-build\**;Backend\build\**;Backend\dist\**" />
+    <None Remove=".local\**;Library\**" />
+    <Compile Remove=".local\**;Library\**;Backend\**;LinBench.Wpf\**;LinBench.Wpf_*\**;LinBench_AllChanges\**" />
+    <Page Remove=".local\**;Library\**;Backend\**;LinBench.Wpf\**;LinBench.Wpf_*\**;LinBench_AllChanges\**" />
+  </ItemGroup>
+
+  <!-- Copy the Python backend next to LinBench.Wpf.exe (bin\Debug\net8.0-windows\Backend).
+       The app starts it with:  python -m linbench port 8765 no-browser   (same as start_backend.bat) -->
+  <ItemGroup>
+    <None Update="Backend\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

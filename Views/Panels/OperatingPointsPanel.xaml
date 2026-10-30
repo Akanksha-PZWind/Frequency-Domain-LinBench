@@ -1,0 +1,167 @@
+<UserControl x:Class="LinBench.Wpf.Views.Panels.OperatingPointsPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:LinBench.Wpf.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="1400" d:DesignWidth="1200">
+    <!-- Same page as the original LinBench "Operating points" view (app.js 'ol:schedule'):
+         row 1-2: six trim charts vs wind speed · row 3: rotor speed across the azimuth files + rotor speed in
+         the order it was linearised · "Azimuth files at X m/s" (mode frequency in each single-azimuth model +
+         file table) · operating-point table. Charts: wheel = zoom, drag = pan, double-click = reset,
+         right-click = Enlarge / PNG / CSV. -->
+    <UserControl.Resources>
+        <Style x:Key="OpCard" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+            <Setter Property="Padding" Value="18,14,18,10" />
+            <Setter Property="Margin" Value="0,0,14,14" />
+        </Style>
+        <Style x:Key="OpCardTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="17" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource BrushText}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,0,0,2" />
+        </Style>
+        <Style x:Key="OpCardSub" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,2,0,6" />
+        </Style>
+        <Style x:Key="NumCell" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="Margin" Value="8,0" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Background="{StaticResource BrushBg}">
+        <StackPanel Margin="20,16,6,16">
+
+            <!-- ============ rows 1-2: trim values vs wind speed ============ -->
+            <UniformGrid Columns="3">
+                <Border Style="{StaticResource OpCard}">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="Rotor speed" Style="{StaticResource OpCardTitle}" Margin="0,0,0,8" />
+                        <controls:LbChart x:Name="ChartRotor" Height="330" ChartTitle="Rotor speed" />
+                    </DockPanel>
+                </Border>
+                <Border Style="{StaticResource OpCard}">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="Blade pitch" Style="{StaticResource OpCardTitle}" Margin="0,0,0,8" />
+                        <controls:LbChart x:Name="ChartPitch" Height="330" ChartTitle="Blade pitch" />
+                    </DockPanel>
+                </Border>
+                <Border Style="{StaticResource OpCard}">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="Generator power" Style="{StaticResource OpCardTitle}" Margin="0,0,0,8" />
+                        <controls:LbChart x:Name="ChartPower" Height="330" ChartTitle="Generator power" />
+                    </DockPanel>
+                </Border>
+                <Border Style="{StaticResource OpCard}">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="Generator torque" Style="{StaticResource OpCardTitle}" Margin="0,0,0,8" />
+                        <controls:LbChart x:Name="ChartTorque" Height="330" ChartTitle="Generator torque" />
+                    </DockPanel>
+                </Border>
+                <Border Style="{StaticResource OpCard}">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="Tip-speed ratio" Style="{StaticResource OpCardTitle}" Margin="0,0,0,8" />
+                        <controls:LbChart x:Name="ChartTsr" Height="330" ChartTitle="Tip-speed ratio" />
+                    </DockPanel>
+                </Border>
+                <Border Style="{StaticResource OpCard}">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="Power and thrust coefficients" Style="{StaticResource OpCardTitle}" Margin="0,0,0,8" />
+                        <controls:LbChart x:Name="ChartCpCt" Height="330" ChartTitle="Power and thrust coefficients" />
+                    </DockPanel>
+                </Border>
+            </UniformGrid>
+
+            <!-- ============ row 3: consistency of the azimuth files ============ -->
+            <UniformGrid Columns="2">
+                <Border Style="{StaticResource OpCard}">
+                    <StackPanel>
+                        <TextBlock Text="Rotor speed across the azimuth files" Style="{StaticResource OpCardTitle}" />
+                        <TextBlock Text="deviation of each file from the mean at its wind speed · files in azimuth order" Style="{StaticResource OpCardSub}" />
+                        <controls:LbChart x:Name="ChartAzSpread" Height="420" Margin="0,6,0,0" ChartTitle="Rotor speed across the azimuth files" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource OpCard}">
+                    <StackPanel>
+                        <TextBlock x:Name="TxtOrderTitle" Text="Rotor speed, in the order it was linearised" Style="{StaticResource OpCardTitle}" />
+                        <TextBlock Text="x = simulation time from each file header · labels = azimuth" Style="{StaticResource OpCardSub}" />
+                        <controls:LbChart x:Name="ChartOrder" Height="420" Margin="0,6,0,0" ChartTitle="Rotor speed in the order it was linearised" />
+                        <TextBlock x:Name="TxtOrderNote" Style="{StaticResource OpCardSub}" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <!-- ============ Azimuth files at the selected wind speed ============ -->
+            <Border Style="{StaticResource OpCard}">
+                <StackPanel>
+                    <WrapPanel>
+                        <TextBlock x:Name="TxtAzFilesTitle" Text="Azimuth files" Style="{StaticResource OpCardTitle}" Margin="0,0,12,2" />
+                        <TextBlock Text="per file · Δf, Δζ: single-azimuth model vs averaged" Style="{StaticResource OpCardSub}" VerticalAlignment="Bottom" />
+                    </WrapPanel>
+
+                    <Border x:Name="ModeCard" Margin="0,10,0,12" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="8"
+                            Padding="16,12,16,8" Background="{StaticResource BrushSurface}">
+                        <StackPanel>
+                            <WrapPanel>
+                                <TextBlock Text="Mode frequency in each single-azimuth model" FontSize="16" FontWeight="SemiBold" Margin="0,0,12,0" />
+                                <TextBlock Text="Δf vs averaged model" Style="{StaticResource OpCardSub}" Margin="0,2,0,0" />
+                            </WrapPanel>
+                            <controls:LbChart x:Name="ChartAzModes" Height="400" Margin="0,8,0,0" ChartTitle="Mode frequency in each single-azimuth model" />
+                        </StackPanel>
+                    </Border>
+
+                    <DataGrid x:Name="FileGrid" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="360"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal" CanUserAddRows="False"
+                              PreviewMouseWheel="OnGridPreviewMouseWheel">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="File" Binding="{Binding File}" Width="2*" />
+                            <DataGridTextColumn Header="Azimuth [deg]" Binding="{Binding Azimuth}" ElementStyle="{StaticResource NumCell}" Width="*" />
+                            <DataGridTextColumn Header="Time [s]" Binding="{Binding Time}" ElementStyle="{StaticResource NumCell}" Width="*" />
+                            <DataGridTextColumn Header="Ω [rpm]" Binding="{Binding Omega}" ElementStyle="{StaticResource NumCell}" Width="*" />
+                            <DataGridTextColumn Header="ΔΩ [%]" Binding="{Binding DOmega}" ElementStyle="{StaticResource NumCell}" Width="*" />
+                            <DataGridTextColumn Header="Pitch [deg]" Binding="{Binding Pitch}" ElementStyle="{StaticResource NumCell}" Width="*" />
+                            <DataGridTextColumn Header="Gen torque [kN·m]" Binding="{Binding GenTorque}" ElementStyle="{StaticResource NumCell}" Width="1.2*" />
+                            <DataGridTextColumn Header="Gen speed [rpm]" Binding="{Binding GenSpeed}" ElementStyle="{StaticResource NumCell}" Width="1.1*" />
+                            <DataGridTextColumn Header="max |Δf| [%]" Binding="{Binding MaxDf}" ElementStyle="{StaticResource NumCell}" Width="*" />
+                            <DataGridTextColumn Header="max |Δζ| [pt]" Binding="{Binding MaxDz}" ElementStyle="{StaticResource NumCell}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Border>
+
+            <!-- ============ operating-point table ============ -->
+            <Border Style="{StaticResource OpCard}">
+                <StackPanel>
+                    <TextBlock Text="Operating-point table" Style="{StaticResource OpCardTitle}" />
+                    <TextBlock Text="values averaged over azimuth · click a row to inspect its azimuth files" Style="{StaticResource OpCardSub}" />
+                    <DataGrid x:Name="OpGrid" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="520" SelectionMode="Single"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal" CanUserAddRows="False"
+                              SelectionChanged="OnOpGridSelectionChanged" PreviewMouseWheel="OnGridPreviewMouseWheel">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Wind [m/s]" Binding="{Binding Wind}" ElementStyle="{StaticResource NumCell}" />
+                            <DataGridTextColumn Header="Rotor [rpm]" Binding="{Binding Rotor}" ElementStyle="{StaticResource NumCell}" />
+                            <DataGridTextColumn Header="Ω spread" Binding="{Binding Spread}" ElementStyle="{StaticResource NumCell}" />
+                            <DataGridTextColumn Header="Pitch [deg]" Binding="{Binding Pitch}" ElementStyle="{StaticResource NumCell}" />
+                            <DataGridTextColumn Header="Torque [MN·m]" Binding="{Binding Torque}" ElementStyle="{StaticResource NumCell}" />
+                            <DataGridTextColumn Header="Power [MW]" Binding="{Binding Power}" ElementStyle="{StaticResource NumCell}" />
+                            <DataGridTextColumn Header="TSR" Binding="{Binding Tsr}" ElementStyle="{StaticResource NumCell}" />
+                            <DataGridTextColumn Header="Cp" Binding="{Binding Cp}" ElementStyle="{StaticResource NumCell}" />
+                            <DataGridTextColumn Header="Ct" Binding="{Binding Ct}" ElementStyle="{StaticResource NumCell}" />
+                            <DataGridTextColumn Header="Platform pitch [deg]" Binding="{Binding PlatformPitch}" ElementStyle="{StaticResource NumCell}" />
+                            <DataGridTextColumn Header="Azimuths" Binding="{Binding Azimuths}" ElementStyle="{StaticResource NumCell}" />
+                            <DataGridTextColumn Header="Periodicity raw / MBC" Binding="{Binding Periodicity}" ElementStyle="{StaticResource NumCell}" />
+                            <DataGridTextColumn Header="Azimuth models: Δf / Δζ" Binding="{Binding AzModels}" ElementStyle="{StaticResource NumCell}" />
+                            <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

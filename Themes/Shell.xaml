@@ -1,0 +1,589 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Look of the original LinBench window: warm grey page, white cards, blue status bar,
+         segmented buttons, nav list with icons, wind-speed chip strip, collapsible right sidebar. -->
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Colours.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- ===================================================== colours -->
+    <SolidColorBrush x:Key="ShellBg" Color="#F3F3F0" />
+    <SolidColorBrush x:Key="ShellCardBorder" Color="#E4E4DF" />
+    <SolidColorBrush x:Key="ShellLine" Color="#ECECE8" />
+    <SolidColorBrush x:Key="ShellInputBg" Color="#F8F8F6" />
+    <SolidColorBrush x:Key="ShellInputBorder" Color="#D9D9D4" />
+    <SolidColorBrush x:Key="ShellHover" Color="#F1F2F4" />
+    <SolidColorBrush x:Key="ShellSelected" Color="#E4EEFB" />
+    <SolidColorBrush x:Key="ShellBlue" Color="#2A78D6" />
+    <SolidColorBrush x:Key="ShellBlueDisabled" Color="#A9CBF1" />
+    <SolidColorBrush x:Key="ShellStatusBar" Color="#1F4E8C" />
+    <SolidColorBrush x:Key="ShellText" Color="#1F2329" />
+    <SolidColorBrush x:Key="ShellMuted" Color="#6B7079" />
+    <SolidColorBrush x:Key="ShellFaint" Color="#A8AEB8" />
+    <!--<solidcolorbrush x:key="shellsetting" color="#a8aeb8" />-->
+    <FontFamily x:Key="ShellMono">Consolas, Cascadia Mono, Courier New</FontFamily>
+
+    <!-- ===================================================== nav icons (16 x 16, stroked) -->
+    <Geometry x:Key="IcoOperatingPoints">M2,2 V14 H14 M4,11 L7,7 L10,9 L14,4</Geometry>
+    <Geometry x:Key="IcoCampbell">M2,2 V14 H14 M4,12 L14,6 M4,9 H14 M4,5 L14,11</Geometry>
+
+    <!-- ===================================================== cards and text -->
+    <Style x:Key="ShellCard" TargetType="Border">
+        <Setter Property="Background" Value="White" />
+        <Setter Property="BorderBrush" Value="{StaticResource ShellCardBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="18,16" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <Style x:Key="ShellCardTitle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource ShellText}" />
+        <Setter Property="Margin" Value="0,0,0,12" />
+    </Style>
+
+    <Style x:Key="ShellLabel" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{StaticResource ShellText}" />
+    </Style>
+
+    <Style x:Key="ShellHint" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="Foreground" Value="{StaticResource ShellMuted}" />
+        <Setter Property="Margin" Value="8,0,0,0" />
+    </Style>
+
+    <Style x:Key="ShellSectionHeader" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource ShellMuted}" />
+    </Style>
+
+    <!-- ===================================================== inputs -->
+    <!-- TextBox with placeholder: put the placeholder text in Tag -->
+    <Style x:Key="ShellInput" TargetType="TextBox">
+        <Setter Property="FontFamily" Value="{StaticResource ShellMono}" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="Foreground" Value="{StaticResource ShellText}" />
+        <Setter Property="Background" Value="{StaticResource ShellInputBg}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ShellInputBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Padding" Value="9,0" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" SnapsToDevicePixels="True">
+                        <Grid Margin="{TemplateBinding Padding}">
+                            <TextBlock x:Name="ph" Text="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}"
+                                       Foreground="{StaticResource ShellMuted}" FontFamily="{TemplateBinding FontFamily}"
+                                       FontSize="{TemplateBinding FontSize}" VerticalAlignment="Center"
+                                       IsHitTestVisible="False" Visibility="Collapsed" TextTrimming="CharacterEllipsis" />
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="False" VerticalAlignment="Center"
+                                          HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Text" Value="">
+                            <Setter TargetName="ph" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource ShellFaint}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource ShellBlue}" />
+                            <Setter TargetName="bd" Property="Background" Value="White" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- search box in the top bar -->
+    <Style x:Key="ShellSearch" TargetType="TextBox" BasedOn="{StaticResource ShellInput}">
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Height" Value="34" />
+        <Setter Property="Padding" Value="34,0,70,0" />
+        <Setter Property="Background" Value="#F7F7F5" />
+    </Style>
+
+    <Style x:Key="ShellButton" TargetType="Button">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{StaticResource ShellText}" />
+        <Setter Property="Background" Value="White" />
+        <Setter Property="BorderBrush" Value="{StaticResource ShellInputBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center">
+<ContentPresenter.Resources><Style TargetType="TextBlock" /></ContentPresenter.Resources>
+</ContentPresenter>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource ShellHover}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="#E6E8EB" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource ShellFaint}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ShellSmallButton" TargetType="Button" BasedOn="{StaticResource ShellButton}">
+        <Setter Property="Height" Value="26" />
+        <Setter Property="Padding" Value="9,0" />
+        <Setter Property="FontSize" Value="12.5" />
+    </Style>
+
+    <Style x:Key="ShellPrimaryButton" TargetType="Button">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="{StaticResource ShellBlue}" />
+        <Setter Property="Padding" Value="18,0" />
+        <Setter Property="Height" Value="38" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center">
+<ContentPresenter.Resources><Style TargetType="TextBlock" /></ContentPresenter.Resources>
+</ContentPresenter>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="#1E64B8" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource ShellBlueDisabled}" />
+                            <Setter Property="Foreground" Value="#F2F7FD" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- segmented control (e.g. natural | damped). Put the RadioButtons in a Border with ShellSegmentHost. -->
+    <Style x:Key="ShellSegmentHost" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{StaticResource ShellInputBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Background" Value="White" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+    </Style>
+
+    <Style x:Key="ShellSegment" TargetType="RadioButton">
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="Foreground" Value="{StaticResource ShellText}" />
+        <Setter Property="Background" Value="White" />
+        <Setter Property="BorderBrush" Value="{StaticResource ShellInputBorder}" />
+        <Setter Property="BorderThickness" Value="0,0,1,0" />
+        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="Height" Value="34" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center">
+<ContentPresenter.Resources><Style TargetType="TextBlock" /></ContentPresenter.Resources>
+</ContentPresenter>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource ShellHover}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource ShellBlue}" />
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- small segmented buttons (sidebar: Frequency natural|damped, Legend Auto|Beside|Off …) -->
+    <Style x:Key="ShellMiniSegment" TargetType="RadioButton" BasedOn="{StaticResource ShellSegment}">
+        <Setter Property="Height" Value="27" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="Padding" Value="10,0" />
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{StaticResource ShellFaint}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ShellCheckBox" TargetType="CheckBox">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{StaticResource ShellText}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+
+    <!-- "▸ Rotor performance table and OpenFAST model" -->
+    <Style x:Key="ShellExpander" TargetType="Expander">
+        <Setter Property="Foreground" Value="{StaticResource ShellText}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Expander">
+                    <DockPanel>
+                        <ToggleButton DockPanel.Dock="Top" IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                      Cursor="Hand" HorizontalAlignment="Left" Focusable="False">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <StackPanel Orientation="Horizontal" Background="Transparent">
+                                        <TextBlock x:Name="arrow" Text="▶" FontSize="9" Margin="0,0,7,0" VerticalAlignment="Center"
+                                                   Foreground="{StaticResource ShellText}" />
+                                        <ContentPresenter Content="{Binding Header, RelativeSource={RelativeSource AncestorType=Expander}}"
+                                                          VerticalAlignment="Center" TextElement.FontSize="13">
+<ContentPresenter.Resources><Style TargetType="TextBlock" /></ContentPresenter.Resources>
+</ContentPresenter>
+                                    </StackPanel>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="arrow" Property="Text" Value="▼" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                        <ContentPresenter x:Name="content" Visibility="Collapsed" Margin="0,8,0,0">
+<ContentPresenter.Resources><Style TargetType="TextBlock" /></ContentPresenter.Resources>
+</ContentPresenter>
+                    </DockPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsExpanded" Value="True">
+                            <Setter TargetName="content" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================== top bar -->
+    <Style x:Key="ShellTopIcon" TargetType="ButtonBase">
+        <Setter Property="Width" Value="38" />
+        <Setter Property="Height" Value="34" />
+        <Setter Property="Foreground" Value="{StaticResource ShellText}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ButtonBase">
+                    <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="7">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center">
+<ContentPresenter.Resources><Style TargetType="TextBlock" /></ContentPresenter.Resources>
+</ContentPresenter>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource ShellHover}" />
+                        </Trigger>
+                        <Trigger Property="ToggleButton.IsChecked" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource ShellSelected}" />
+                            <Setter Property="Foreground" Value="{StaticResource ShellBlue}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ShellPill" TargetType="Button">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="bd" Background="#F7F7F5" BorderBrush="{StaticResource ShellInputBorder}" BorderThickness="1"
+                            CornerRadius="17" Padding="12,0" Height="34">
+                        <ContentPresenter VerticalAlignment="Center">
+<ContentPresenter.Resources><Style TargetType="TextBlock" /></ContentPresenter.Resources>
+</ContentPresenter>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource ShellHover}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================== left nav -->
+    <Style x:Key="ShellNavHeader" TargetType="TextBlock" BasedOn="{StaticResource ShellSectionHeader}">
+        <Setter Property="Margin" Value="12,14,0,8" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=DockPanel}}" Value="compact">
+                <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- nav item: put the icon Geometry in Tag -->
+    <Style x:Key="ShellNavItem" TargetType="RadioButton">
+        <Setter Property="FontSize" Value="14.5" />
+        <Setter Property="Foreground" Value="{StaticResource ShellText}" />
+        <Setter Property="GroupName" Value="ShellNav" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="bd" Background="Transparent" CornerRadius="7" Height="38" Padding="12,0" Margin="0,1">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Path x:Name="ico" Data="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}"
+                                  Stroke="{TemplateBinding Foreground}" StrokeThickness="1.4" Width="17" Height="17"
+                                  Stretch="Uniform" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                  Margin="0,0,14,0" />
+                            <ContentPresenter x:Name="lbl" VerticalAlignment="Center">
+<ContentPresenter.Resources><Style TargetType="TextBlock" /></ContentPresenter.Resources>
+</ContentPresenter>
+                        </StackPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource ShellHover}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource ShellSelected}" />
+                            <Setter Property="Foreground" Value="{StaticResource ShellBlue}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="#B3B8C1" />
+                        </Trigger>
+                        <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=DockPanel}}" Value="compact">
+                            <Setter TargetName="lbl" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="ico" Property="Margin" Value="0" />
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================== wind-speed chip strip (ListBox) -->
+    <Style x:Key="ShellChipStrip" TargetType="ListBox">
+        <Setter Property="Background" Value="White" />
+        <Setter Property="BorderBrush" Value="{StaticResource ShellInputBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBox">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="3">
+                        <ItemsPresenter />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="1" />
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ShellChip" TargetType="ListBoxItem">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{StaticResource ShellText}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Border x:Name="bd" Background="Transparent" CornerRadius="6" Height="28" MinWidth="34" Margin="1,0">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center">
+<ContentPresenter.Resources><Style TargetType="TextBlock" /></ContentPresenter.Resources>
+</ContentPresenter>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource ShellHover}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource ShellBlue}" />
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ShellChevron" TargetType="Button">
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="Foreground" Value="{StaticResource ShellText}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="bd" Background="Transparent" CornerRadius="6">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center">
+<ContentPresenter.Resources><Style TargetType="TextBlock" /></ContentPresenter.Resources>
+</ContentPresenter>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource ShellHover}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource ShellFaint}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================== right sidebar sections (▾ RESULTS, ▸ PLOTS …) -->
+    <Style x:Key="ShellSideExpander" TargetType="Expander">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Expander">
+                    <Border BorderBrush="{StaticResource ShellLine}" BorderThickness="0,0,0,1" Padding="16,12">
+                        <DockPanel>
+                            <ToggleButton DockPanel.Dock="Top" Cursor="Hand" Focusable="False" HorizontalAlignment="Stretch"
+                                          IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <StackPanel Orientation="Horizontal" Background="Transparent">
+                                            <TextBlock x:Name="arrow" Text="▶" FontSize="8" Margin="0,0,8,0" VerticalAlignment="Center"
+                                                       Foreground="{StaticResource ShellMuted}" />
+                                            <ContentPresenter Content="{Binding Header, RelativeSource={RelativeSource AncestorType=Expander}}"
+                                                              VerticalAlignment="Center">
+<ContentPresenter.Resources><Style TargetType="TextBlock" /></ContentPresenter.Resources>
+</ContentPresenter>
+                                        </StackPanel>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="arrow" Property="Text" Value="▼" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter x:Name="content" Visibility="Collapsed" Margin="0,10,0,0">
+<ContentPresenter.Resources><Style TargetType="TextBlock" /></ContentPresenter.Resources>
+</ContentPresenter>
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsExpanded" Value="True">
+                            <Setter TargetName="content" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- one metric line of the sidebar: label left, value right (green / red by Tone), small note under the value -->
+    <DataTemplate x:Key="ShellMetricTemplate">
+        <Border BorderBrush="{StaticResource ShellLine}" BorderThickness="0,0,0,1" Padding="0,7">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Label}" FontSize="13" Foreground="{StaticResource ShellText}" TextWrapping="Wrap"
+                           Margin="0,0,10,0" />
+                <StackPanel Grid.Column="1" HorizontalAlignment="Right" MaxWidth="190">
+                    <TextBlock Text="{Binding Value}" FontSize="13.5" FontWeight="SemiBold" HorizontalAlignment="Right" TextAlignment="Right"
+                               TextWrapping="Wrap">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource ShellText}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Tone}" Value="good">
+                                        <Setter Property="Foreground" Value="#16803D" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Tone}" Value="bad">
+                                        <Setter Property="Foreground" Value="#C81E1E" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="{Binding Sub}" FontSize="11.5" Foreground="{StaticResource ShellMuted}" HorizontalAlignment="Right"
+                               TextAlignment="Right" TextWrapping="Wrap">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Sub}" Value="">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </DataTemplate>
+
+    <!-- one titled block of the sidebar ("Rotor speed across the azimuth files" + its metrics + note) -->
+    <DataTemplate x:Key="ShellSectionTemplate">
+        <StackPanel Margin="0,0,0,14">
+            <TextBlock Text="{Binding Title}" FontSize="13.5" FontWeight="SemiBold" Foreground="{StaticResource ShellText}"
+                       TextWrapping="Wrap" Margin="0,0,0,4" />
+            <ItemsControl ItemsSource="{Binding Items}" ItemTemplate="{StaticResource ShellMetricTemplate}" />
+            <Expander Margin="0,8,0,0">
+                <Expander.Style>
+                    <Style TargetType="Expander" BasedOn="{StaticResource ShellExpander}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Note}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Note}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Expander.Style>
+                <Expander.Header>
+                    <TextBlock Text="ⓘ Notes" Foreground="{StaticResource ShellBlue}" FontSize="12.5" />
+                </Expander.Header>
+                <TextBlock Text="{Binding Note}" TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource ShellMuted}" />
+            </Expander>
+        </StackPanel>
+    </DataTemplate>
+</ResourceDictionary>

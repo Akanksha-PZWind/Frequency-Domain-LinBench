@@ -1,0 +1,445 @@
+<Window x:Class="LinBench.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:LinBench.Wpf.Views"
+        xmlns:dialogs="clr-namespace:LinBench.Wpf.Views.Dialogs"
+        xmlns:controls="clr-namespace:LinBench.Wpf.Controls"
+        mc:Ignorable="d"
+        Title="LinBench" Height="860" Width="1440" MinHeight="600" MinWidth="1000"
+        WindowStartupLocation="CenterScreen" WindowState="Maximized"
+        FontFamily="Segoe UI" Background="{StaticResource ShellBg}">
+
+    <!-- Window layout of the original LinBench:
+         top bar (☰ · logo · dataset pill · search · sidebar / report / settings / more)
+         left nav (OPEN LOOP: Operating points, Campbell diagram; "Icons only")   ·   page   ·   right sidebar (RESULTS / PLOTS / IN THIS VIEW / DATA)
+         blue status bar.  On the start page only the top bar, the page and the status bar are shown. -->
+
+    <Window.Resources>
+        <Style x:Key="PaletteKey" TargetType="Border">
+            <Setter Property="BorderBrush" Value="{StaticResource ShellInputBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Padding" Value="5,0" />
+            <Setter Property="Margin" Value="0,0,4,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="54" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="26" />
+        </Grid.RowDefinitions>
+
+        <!-- ================= TOP BAR ================= -->
+        <Border Grid.Row="0" Background="White" BorderBrush="{StaticResource ShellCardBorder}" BorderThickness="0,0,0,1" Padding="8,0,12,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- left: menu · logo · dataset pill -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="BtnNav" Style="{StaticResource ShellTopIcon}" Command="{Binding ToggleNavCommand}"
+                            ToolTip="Show / hide the view list (Ctrl+B)" Margin="0,0,6,0">
+                        <Path Data="M1,3 H15 M1,8 H15 M1,13 H15" Stroke="{StaticResource ShellText}" StrokeThickness="1.6"
+                              Width="16" Height="16" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                    </Button>
+                    <Path Data="M2,20 L7,6 L12,15 L17,5 L22,20" Stroke="{StaticResource ShellBlue}" StrokeThickness="2.4"
+                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                          Width="24" Height="24" Stretch="Uniform" Margin="6,0,8,0" VerticalAlignment="Center" />
+                    <TextBlock Text="LinBench" FontWeight="Bold" FontSize="18" Foreground="{StaticResource ShellText}"
+                               VerticalAlignment="Center" Margin="0,0,14,0" />
+
+                    <Button x:Name="DatasetPill" Style="{StaticResource ShellPill}" Command="{Binding OpenTurbineSpecsCommand}"
+                            ToolTip="Turbine and dataset details">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="#6B7079" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Results.DatasetName}" FontWeight="SemiBold" FontSize="13.5" MaxWidth="300"
+                                       TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Results.DatasetMeta}" FontSize="13" Foreground="{StaticResource ShellMuted}"
+                                       Margin="10,0,4,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- centre: search – opens the command palette (Ctrl+K) -->
+                <Border x:Name="SearchBar" Grid.Column="1" Width="560" Height="34" VerticalAlignment="Center" Cursor="IBeam"
+                        Background="#F7F7F5" BorderBrush="{StaticResource ShellInputBorder}" BorderThickness="1" CornerRadius="6"
+                        MouseLeftButtonUp="OnOpenPalette" ToolTip="Go to a view, a wind speed or an action (Ctrl+K)">
+                    <Grid>
+                        <Path Data="M6.5,1 A5.5,5.5 0 1 1 6.49,1 M10.5,10.5 L15,15" Stroke="{StaticResource ShellMuted}" StrokeThickness="1.5"
+                              Width="15" Height="15" Stretch="Uniform" HorizontalAlignment="Left" Margin="12,0,0,0"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                        <TextBlock Text="Search views, wind speeds, actions…" Foreground="{StaticResource ShellMuted}" FontSize="13"
+                                   VerticalAlignment="Center" Margin="36,0,70,0" />
+                        <Border HorizontalAlignment="Right" Margin="0,0,8,0" Padding="6,1" CornerRadius="4" BorderThickness="1"
+                                BorderBrush="{StaticResource ShellInputBorder}" Background="White" VerticalAlignment="Center">
+                            <TextBlock Text="Ctrl K" FontFamily="{StaticResource ShellMono}" FontSize="11.5" Foreground="{StaticResource ShellText}" />
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- right: sidebar · report · settings · more -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <ToggleButton x:Name="BtnSidebar" Style="{StaticResource ShellTopIcon}" IsChecked="True" Click="OnSidebarToggle"
+                                  ToolTip="Show / hide the results panel" Margin="0,0,4,0">
+                        <Path Data="M1,2 H15 V14 H1 Z M10,2 V14" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}"
+                              StrokeThickness="1.4" Width="17" Height="17" Stretch="Uniform" StrokeLineJoin="Round" />
+                    </ToggleButton>
+                    <Button x:Name="BtnReport" Style="{StaticResource ShellTopIcon}" Command="{Binding OpenLogCommand}"
+                            ToolTip="Analysis log" Margin="0,0,4,0">
+                        <Path Data="M3,1 H10 L13,4 V15 H3 Z M10,1 V4 H13 M5.5,8 H10.5 M5.5,11 H10.5" Stroke="{StaticResource ShellText}"
+                              StrokeThickness="1.3" Width="17" Height="17" Stretch="Uniform" StrokeLineJoin="Round" />
+                    </Button>
+
+                    <Button Style="{StaticResource ShellTopIcon}" Command="{Binding OpenSettingsCommand}" ToolTip="Settings (Ctrl+,)"
+                            Margin="0,0,4,0" FontSize="17">
+                        <Button.Content>
+                            <Path Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81C14.36,2.58,14.17,2,13.93,2h-3.87 C9.83,2,9.64,2.58,9.6,2.81L9.24,5.35C8.65,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 c-0.11,0.21-0.06,0.47,0.12,0.61l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.87c0.24,0,0.43-0.17,0.48-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.11-0.21,0.06-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z" 
+                                   Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" 
+                                    Width="16" Height="16" Stretch="Uniform"/>
+                        </Button.Content>
+                    </Button>
+
+                    <!--<Button Style="{StaticResource ShellTopIcon}" Command="{Binding OpenSettingsCommand}" ToolTip="Settings (Ctrl+,)"
+                            Margin="0,0,4,0" FontSize="17" Foreground="{StaticResource ShellTopIcon}">
+                        
+                    </Button>-->
+
+
+                    <Button x:Name="BtnMore" Style="{StaticResource ShellTopIcon}" Content="•••" FontSize="12" Click="OnMoreClick" ToolTip="More">
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="New analysis" Command="{Binding SwitchToSetupCommand}" />
+                                <MenuItem Header="Back to results" Command="{Binding SwitchToResultsCommand}" IsEnabled="{Binding HasDataset}" />
+                                <MenuItem Header="Analysis log" Command="{Binding OpenLogCommand}" />
+                                <MenuItem Header="Turbine and dataset details" Command="{Binding OpenTurbineSpecsCommand}" />
+                                <MenuItem Header="Open folder in Explorer" Command="{Binding OpenFolderInExplorerCommand}" />
+                                <Separator />
+                                <MenuItem Header="Settings" Command="{Binding OpenSettingsCommand}" InputGestureText="Ctrl+," />
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ================= NAV · PAGE · SIDEBAR ================= -->
+        <Grid x:Name="WorkArea" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- left nav -->
+            <Border x:Name="NavBorder" Grid.Column="0" Width="230" Background="White"
+                    BorderBrush="{StaticResource ShellCardBorder}" BorderThickness="0,0,1,0">
+                <DockPanel x:Name="NavRoot" LastChildFill="True">
+                    <Border DockPanel.Dock="Bottom" BorderBrush="{StaticResource ShellLine}" BorderThickness="0,1,0,0" Padding="8,6">
+                        <Button x:Name="BtnCompact" Style="{StaticResource ShellTopIcon}" Width="Auto" HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left" Click="OnCompactClick">
+                            <TextBlock x:Name="TxtCompact" Text="‹   Icons only" FontSize="14" Margin="6,0,0,0" />
+                        </Button>
+                    </Border>
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="8,4,8,8">
+                            <TextBlock Text="OPEN LOOP" Style="{StaticResource ShellNavHeader}" />
+                            <RadioButton Content="Operating points" Style="{StaticResource ShellNavItem}" Tag="{StaticResource IcoOperatingPoints}"
+                                         IsChecked="{Binding Results.CurrentView, Mode=OneWay, Converter={StaticResource StringEquals}, ConverterParameter=OperatingPoints}"
+                                         Command="{Binding Results.SetViewCommand}" CommandParameter="OperatingPoints" Click="OnNavClick" ToolTip="Operating points" />
+                            <RadioButton Content="Campbell diagram" Style="{StaticResource ShellNavItem}" Tag="{StaticResource IcoCampbell}"
+                                         IsChecked="{Binding Results.CurrentView, Mode=OneWay, Converter={StaticResource StringEquals}, ConverterParameter=Campbell}"
+                                         Command="{Binding Results.SetViewCommand}" CommandParameter="Campbell" Click="OnNavClick" ToolTip="Campbell diagram" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <!-- page -->
+            <Grid Grid.Column="1">
+                <views:SetupView x:Name="SetupViewControl" DataContext="{Binding Setup}" Visibility="Visible" />
+                <views:ProgressView x:Name="ProgressViewControl" DataContext="{Binding Progress}" Visibility="Collapsed" />
+                <views:ResultsView x:Name="ResultsViewControl" DataContext="{Binding Results}" Visibility="Collapsed" />
+            </Grid>
+
+            <!-- right sidebar: VIEW SETTINGS (page controls) · RESULTS · PLOTS · IN THIS VIEW · DATA -->
+            <Border x:Name="SideBar" Grid.Column="2" Width="330" Background="White"
+                    BorderBrush="{StaticResource ShellCardBorder}" BorderThickness="1,0,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel>
+                        <Expander IsExpanded="True">
+                            <Expander.Style>
+                                <Style TargetType="Expander" BasedOn="{StaticResource ShellSideExpander}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Results.ViewSettingsContent}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Expander.Style>
+                            <Expander.Header>
+                                <TextBlock Text="VIEW SETTINGS" Style="{StaticResource ShellSectionHeader}" />
+                            </Expander.Header>
+                            <ContentPresenter Content="{Binding Results.ViewSettingsContent}" />
+                        </Expander>
+
+                        <Expander Style="{StaticResource ShellSideExpander}" IsExpanded="True">
+                            <Expander.Header>
+                                <TextBlock Text="RESULTS" Style="{StaticResource ShellSectionHeader}" />
+                            </Expander.Header>
+                            <StackPanel>
+                                <ItemsControl ItemsSource="{Binding Results.SidebarSections}" ItemTemplate="{StaticResource ShellSectionTemplate}" />
+                                <ContentPresenter Content="{Binding Results.ResultsExtraContent}" />
+                            </StackPanel>
+                        </Expander>
+
+                        <!-- the same plot settings for every chart (LbChart reads ChartSettings.Instance) -->
+                        <Expander Style="{StaticResource ShellSideExpander}" IsExpanded="True">
+                            <Expander.Header>
+                                <TextBlock Text="PLOTS" Style="{StaticResource ShellSectionHeader}" />
+                            </Expander.Header>
+                            <Grid DataContext="{x:Static controls:ChartSettings.Instance}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Text="Legend" VerticalAlignment="Center" FontSize="13" />
+                                <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource ShellSegmentHost}" Margin="0,0,0,8" HorizontalAlignment="Right">
+                                    <StackPanel Orientation="Horizontal">
+                                        <RadioButton Content="Auto" Style="{StaticResource ShellMiniSegment}" GroupName="PlotLegend"
+                                                     IsChecked="{Binding Legend, Converter={StaticResource StringEquals}, ConverterParameter=auto}" />
+                                        <RadioButton Content="Beside" Style="{StaticResource ShellMiniSegment}" GroupName="PlotLegend"
+                                                     IsChecked="{Binding Legend, Converter={StaticResource StringEquals}, ConverterParameter=beside}" />
+                                        <RadioButton Content="Off" Style="{StaticResource ShellMiniSegment}" GroupName="PlotLegend" BorderThickness="0"
+                                                     IsChecked="{Binding Legend, Converter={StaticResource StringEquals}, ConverterParameter=off}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock Grid.Row="1" Text="Cursor" VerticalAlignment="Center" FontSize="13" />
+                                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource ShellSegmentHost}" Margin="0,0,0,8" HorizontalAlignment="Right">
+                                    <StackPanel Orientation="Horizontal">
+                                        <RadioButton Content="Full" Style="{StaticResource ShellMiniSegment}" GroupName="PlotCursor"
+                                                     IsChecked="{Binding Cursor, Converter={StaticResource StringEquals}, ConverterParameter=full}" />
+                                        <RadioButton Content="Line" Style="{StaticResource ShellMiniSegment}" GroupName="PlotCursor"
+                                                     IsChecked="{Binding Cursor, Converter={StaticResource StringEquals}, ConverterParameter=vertical}" />
+                                        <RadioButton Content="Off" Style="{StaticResource ShellMiniSegment}" GroupName="PlotCursor" BorderThickness="0"
+                                                     IsChecked="{Binding Cursor, Converter={StaticResource StringEquals}, ConverterParameter=off}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock Grid.Row="2" Text="Grid" VerticalAlignment="Center" FontSize="13" />
+                                <Border Grid.Row="2" Grid.Column="1" Style="{StaticResource ShellSegmentHost}" Margin="0,0,0,8" HorizontalAlignment="Right">
+                                    <StackPanel Orientation="Horizontal">
+                                        <RadioButton Content="On" Style="{StaticResource ShellMiniSegment}" GroupName="PlotGrid"
+                                                     IsChecked="{Binding Grid, Converter={StaticResource StringEquals}, ConverterParameter=on}" />
+                                        <RadioButton Content="Fine" Style="{StaticResource ShellMiniSegment}" GroupName="PlotGrid"
+                                                     IsChecked="{Binding Grid, Converter={StaticResource StringEquals}, ConverterParameter=fine}" />
+                                        <RadioButton Content="Off" Style="{StaticResource ShellMiniSegment}" GroupName="PlotGrid" BorderThickness="0"
+                                                     IsChecked="{Binding Grid, Converter={StaticResource StringEquals}, ConverterParameter=off}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock Grid.Row="3" Text="Lines" VerticalAlignment="Center" FontSize="13" />
+                                <Border Grid.Row="3" Grid.Column="1" Style="{StaticResource ShellSegmentHost}" Margin="0,0,0,8" HorizontalAlignment="Right">
+                                    <StackPanel Orientation="Horizontal">
+                                        <RadioButton Content="Thin" Style="{StaticResource ShellMiniSegment}" GroupName="PlotLines"
+                                                     IsChecked="{Binding Lines, Converter={StaticResource StringEquals}, ConverterParameter=thin}" />
+                                        <RadioButton Content="Normal" Style="{StaticResource ShellMiniSegment}" GroupName="PlotLines"
+                                                     IsChecked="{Binding Lines, Converter={StaticResource StringEquals}, ConverterParameter=normal}" />
+                                        <RadioButton Content="Bold" Style="{StaticResource ShellMiniSegment}" GroupName="PlotLines" BorderThickness="0"
+                                                     IsChecked="{Binding Lines, Converter={StaticResource StringEquals}, ConverterParameter=bold}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock Grid.Row="4" Grid.ColumnSpan="2" TextWrapping="Wrap" FontSize="11.5" Foreground="{StaticResource ShellMuted}"
+                                           Margin="0,4,0,0"
+                                           Text="Click a legend entry to hide / show a curve. Right-click a chart: Enlarge, Zoom, Save PNG, CSV. Ctrl + wheel zooms, drag moves, double-click resets." />
+                            </Grid>
+                        </Expander>
+
+                        <Expander Style="{StaticResource ShellSideExpander}" IsExpanded="True">
+                            <Expander.Header>
+                                <TextBlock Text="IN THIS VIEW" Style="{StaticResource ShellSectionHeader}" />
+                            </Expander.Header>
+                            <ItemsControl ItemsSource="{Binding Results.InThisView}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Margin="4,4,0,4">
+                                            <Border Width="9" Height="9" BorderBrush="{StaticResource ShellBlue}" BorderThickness="1.2"
+                                                    CornerRadius="1.5" VerticalAlignment="Center" Margin="0,1,7,0" />
+                                            <TextBlock Text="{Binding}" FontSize="13" Foreground="{StaticResource ShellText}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Expander>
+
+                        <Expander Style="{StaticResource ShellSideExpander}" IsExpanded="True">
+                            <Expander.Header>
+                                <TextBlock Text="DATA" Style="{StaticResource ShellSectionHeader}" />
+                            </Expander.Header>
+                            <StackPanel>
+                                <Button Content="All plot data of this view (CSV)" Style="{StaticResource ShellButton}" Height="32"
+                                        HorizontalAlignment="Stretch" Click="OnExportViewCsv" Margin="0,2,0,4" />
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <!-- ================= MODAL DIALOGS OVERLAY ================= -->
+        <Grid Grid.Row="0" Grid.RowSpan="3" x:Name="ModalBackdrop" Background="#40000000" Visibility="Collapsed"
+              MouseDown="OnModalBackdropMouseDown">
+            <dialogs:SettingsDialog x:Name="SettingsDlg" DataContext="{Binding SettingsVm}"
+                                    Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <dialogs:AnalysisLogDialog x:Name="LogDlg"
+                                       Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <dialogs:TurbineSpecsDialog x:Name="SpecsDlg"
+                                        Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Grid>
+
+        <!-- ================= COMMAND PALETTE (Ctrl+K) ================= -->
+        <Grid Grid.Row="0" Grid.RowSpan="3" x:Name="PaletteOverlay" Background="#40000000" Visibility="Collapsed" Panel.ZIndex="20"
+              MouseDown="OnPaletteBackdropMouseDown">
+            <Border x:Name="PaletteCard" Width="640" VerticalAlignment="Top" Margin="0,112,0,0" Background="White" CornerRadius="10"
+                    BorderBrush="{StaticResource ShellCardBorder}" BorderThickness="1">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="28" ShadowDepth="6" Opacity="0.25" />
+                </Border.Effect>
+                <DockPanel>
+                    <Border DockPanel.Dock="Top" BorderBrush="{StaticResource ShellLine}" BorderThickness="0,0,0,1" Padding="14,0">
+                        <Grid Height="50">
+                            <Path Data="M6.5,1 A5.5,5.5 0 1 1 6.49,1 M10.5,10.5 L15,15" Stroke="{StaticResource ShellMuted}" StrokeThickness="1.5"
+                                  Width="15" Height="15" Stretch="Uniform" HorizontalAlignment="Left" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                            <TextBox x:Name="PaletteBox" BorderThickness="0" Background="Transparent" FontSize="15" Margin="26,0,0,0"
+                                     VerticalAlignment="Center" TextChanged="OnPaletteTextChanged" PreviewKeyDown="OnPaletteKeyDown">
+                                <TextBox.Template>
+                                    <ControlTemplate TargetType="TextBox">
+                                        <Grid>
+                                            <TextBlock x:Name="ph" Text="Type a view, a wind speed (e.g. 17) or an action" Foreground="{StaticResource ShellMuted}"
+                                                       FontSize="15" IsHitTestVisible="False" Visibility="Collapsed" VerticalAlignment="Center" />
+                                            <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center" />
+                                        </Grid>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="Text" Value="">
+                                                <Setter TargetName="ph" Property="Visibility" Value="Visible" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </TextBox.Template>
+                            </TextBox>
+                        </Grid>
+                    </Border>
+                    <Border DockPanel.Dock="Bottom" BorderBrush="{StaticResource ShellLine}" BorderThickness="0,1,0,0" Padding="14,7"
+                            Background="#FAFAF9" CornerRadius="0,0,10,10">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource PaletteKey}"><TextBlock Text="↑" FontSize="11" /></Border>
+                            <Border Style="{StaticResource PaletteKey}"><TextBlock Text="↓" FontSize="11" /></Border>
+                            <TextBlock Text="move · " FontSize="12" Foreground="{StaticResource ShellMuted}" VerticalAlignment="Center" Margin="2,0,6,0" />
+                            <Border Style="{StaticResource PaletteKey}"><TextBlock Text="Enter" FontSize="11" FontFamily="{StaticResource ShellMono}" /></Border>
+                            <TextBlock Text="open · " FontSize="12" Foreground="{StaticResource ShellMuted}" VerticalAlignment="Center" Margin="2,0,6,0" />
+                            <Border Style="{StaticResource PaletteKey}"><TextBlock Text="Esc" FontSize="11" FontFamily="{StaticResource ShellMono}" /></Border>
+                            <TextBlock Text="close" FontSize="12" Foreground="{StaticResource ShellMuted}" VerticalAlignment="Center" Margin="2,0,0,0" />
+                        </StackPanel>
+                    </Border>
+                    <ListBox x:Name="PaletteList" MaxHeight="500" BorderThickness="0" Margin="6,6,6,6"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled" MouseLeftButtonUp="OnPaletteClick">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="IsEnabled" Value="{Binding Enabled}" />
+                                <Setter Property="Cursor" Value="Hand" />
+                                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <Border x:Name="bd" Background="Transparent" CornerRadius="6" Padding="10,0" Height="34">
+                                                <ContentPresenter VerticalAlignment="Center">
+                                                    <ContentPresenter.Resources><Style TargetType="TextBlock" /></ContentPresenter.Resources>
+                                                </ContentPresenter>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="bd" Property="Background" Value="{StaticResource ShellHover}" />
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="bd" Property="Background" Value="{StaticResource ShellSelected}" />
+                                                </Trigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Opacity" Value="0.45" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="28" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Path Data="{Binding Icon}" Stroke="{Binding IconBrush}" StrokeThickness="1.3" Width="15" Height="15"
+                                          Stretch="Uniform" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                          HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="14" Foreground="{StaticResource ShellText}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="{Binding Hint}" FontSize="12.5" Foreground="{StaticResource ShellMuted}"
+                                               VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+        <!-- ================= STATUS BAR (blue) ================= -->
+        <Border Grid.Row="2" Background="{StaticResource ShellStatusBar}" Padding="12,0">
+            <DockPanel LastChildFill="True">
+                <TextBlock DockPanel.Dock="Right" Text="{Binding AppVersion, StringFormat='LinBench {0}'}" Foreground="#DCE7F5"
+                           FontSize="12" VerticalAlignment="Center" />
+                <TextBlock DockPanel.Dock="Right" Text="{Binding Results.StatusSummary}" Foreground="White"
+                           FontSize="12" VerticalAlignment="Center" Margin="0,0,22,0" />
+                <TextBlock DockPanel.Dock="Right" Text="{Binding Verdict}" Foreground="White" FontWeight="SemiBold"
+                           FontSize="12" VerticalAlignment="Center" Margin="0,0,18,0" />
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Ellipse Width="7" Height="7" Margin="0,0,7,0" VerticalAlignment="Center"
+                             Fill="{Binding IsBackendConnected, Converter={StaticResource BoolToStatusBrush}}" />
+                    <TextBlock Text="{Binding StatusText}" Foreground="White" FontSize="12.5" VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" MaxWidth="700" />
+                    <Button Command="{Binding OpenFolderInExplorerCommand}" Cursor="Hand" Margin="16,0,0,0" ToolTip="Open in File Explorer"
+                            Visibility="{Binding CurrentFolderPath, Converter={StaticResource StringToVisibility}}">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <ContentPresenter />
+                            </ControlTemplate>
+                        </Button.Template>
+                        <TextBlock Text="{Binding CurrentFolderPath}" Foreground="#BFD6F2" FontSize="12" TextTrimming="CharacterEllipsis"
+                                   MaxWidth="460" TextDecorations="Underline" />
+                    </Button>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

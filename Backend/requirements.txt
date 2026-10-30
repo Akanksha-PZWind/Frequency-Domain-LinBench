@@ -1,0 +1,3 @@
+# LinBench backend (operating points + Campbell diagram) - runtime requirements
+numpy
+scipy
