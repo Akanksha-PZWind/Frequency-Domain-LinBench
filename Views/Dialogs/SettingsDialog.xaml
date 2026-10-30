@@ -1,0 +1,34 @@
+<UserControl x:Class="LinBench.Wpf.Views.Dialogs.SettingsDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="880" d:DesignWidth="760">
+    <!-- Settings window like the original LinBench: UNITS · APPEARANCE · PLOTS · ACCESSIBILITY (+ PYTHON BACKEND).
+         Changes apply at once and are saved on this PC (%USERPROFILE%\.linbench\wpf_view_settings.json).
+         The rows are built in the code-behind. -->
+    <Border Background="White" CornerRadius="14" Width="760" MaxHeight="880" SnapsToDevicePixels="True">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="30" ShadowDepth="6" Opacity="0.25" />
+        </Border.Effect>
+        <DockPanel LastChildFill="True">
+            <Border DockPanel.Dock="Top" BorderBrush="{StaticResource ShellLine}" BorderThickness="0,0,0,1" Padding="20,16,14,14">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="✕" Style="{StaticResource ShellTopIcon}" FontSize="15"
+                            Click="OnCloseClick" ToolTip="Close" />
+                    <TextBlock Text="Settings" FontSize="19" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </DockPanel>
+            </Border>
+            <Border DockPanel.Dock="Bottom" BorderBrush="{StaticResource ShellLine}" BorderThickness="0,1,0,0" Padding="20,12,16,12">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Restore defaults" Style="{StaticResource ShellButton}" Click="OnRestoreDefaults" />
+                    <TextBlock Text="Saved on this PC for LinBench." Foreground="{StaticResource ShellMuted}" FontSize="13" VerticalAlignment="Center" />
+                </DockPanel>
+            </Border>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel x:Name="Rows" Margin="20,8,20,16" />
+            </ScrollViewer>
+        </DockPanel>
+    </Border>
+</UserControl>

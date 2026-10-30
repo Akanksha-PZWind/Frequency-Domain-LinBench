@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>LinBench</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M3 20 L8 9 L12 15 L16 5 L21 20%22 fill=%22none%22 stroke=%22%232a78d6%22 stroke-width=%222.5%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="app.css">
+<script>
+  // theme and text size before the first paint, so the page never flashes in the wrong colours
+  try { const p = JSON.parse(localStorage.getItem('lb.prefs') || '{}'); const t = p.theme === 'dark' || (p.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    document.documentElement.dataset.theme = t; } catch (e) { document.documentElement.dataset.theme = 'light'; }
+</script>
+</head>
+<body class="app no-nav">
+<!-- top bar: the app, the data set in use, and a few icon buttons; everything else is in Settings, the menu and Ctrl+K -->
+<header class="top">
+  <div class="brand">
+    <button class="ib nav-toggle" id="btnNav" title="Show or hide the view list (Ctrl+B)" aria-label="Views"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+    <svg class="logo" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20 L8 9 L12 15 L16 5 L21 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+    <span class="name">LinBench</span>
+    <button class="dataset" id="hdrTurbine" title="Turbine, model and inputs of this analysis" hidden></button>
+  </div>
+  <button class="cmdk" id="btnCmd" title="Find a view, a wind speed or an action (Ctrl+K)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><span>Search views, wind speeds, actions…</span><kbd>Ctrl K</kbd></button>
+  <div class="top-r">
+    <button class="ib" id="btnInsp" hidden title="Show or hide the panel on the right: view settings, plot options, plot list, data export" aria-label="Side panel"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></svg></button>
+    <button class="ib" id="btnReport" hidden title="Report: the whole analysis in one HTML file (prints to PDF)" aria-label="Report"><svg viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/></svg></button>
+    <button class="ib" id="btnSettings" title="Settings: units, theme, plots, accessibility (Ctrl+,)" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.6M12 18.6v2.6M4.2 7.5l2.3 1.3M17.5 15.2l2.3 1.3M4.2 16.5l2.3-1.3M17.5 8.8l2.3-1.3"/><circle cx="12" cy="12" r="7.2"/></svg></button>
+    <div class="menu-wrap">
+      <button class="ib" id="btnMenu" title="More" aria-label="More"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>
+      <div class="menu" id="menu" hidden>
+        <button id="btnNew" hidden>New analysis</button>
+        <button id="btnLog" hidden>Analysis log</button>
+        <hr>
+        <button id="mGuide">Guide and maths reference</button>
+        <button id="mKeys">Keyboard shortcuts</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- left: every view in one list (collapsible to icons) -->
+<nav class="sidenav" id="sidenav"></nav>
+
+<main id="workspace">
+  <!-- =============================================================== SETUP -->
+  <section id="setup" class="screen">
+    <div class="setup-grid">
+      <div class="card">
+        <div class="card-h"><h3>Inputs</h3></div>
+        <div class="form">
+          <label class="fl">
+            <span class="lab">Linearisation folder <em>required</em></span>
+            <div class="pathrow"><input id="inLin" type="text" placeholder="Folder containing OpenFAST .lin files" spellcheck="false"><button class="btn" data-pick="dir" data-for="inLin">Browse…</button></div>
+            <label class="chk"><input type="checkbox" id="inRecursive"> include sub-folders</label>
+          </label>
+          <label class="fl">
+            <span class="lab">ROSCO DISCON.IN <em>for closed loop</em></span>
+            <div class="pathrow"><input id="inDiscon" type="text" placeholder="…_DISCON.IN" spellcheck="false"><button class="btn" data-pick="discon" data-for="inDiscon">Browse…</button></div>
+          </label>
+          <label class="fl">
+            <span class="lab">ROSCO tuning YAML <em>optional · fills the rest</em></span>
+            <div class="pathrow"><input id="inYaml" type="text" placeholder="…ROSCO.yaml" spellcheck="false"><button class="btn" data-pick="yaml" data-for="inYaml">Browse…</button></div>
+          </label>
+          <details class="more">
+            <summary>Rotor performance table and OpenFAST model</summary>
+            <label class="fl">
+              <span class="lab">Cp-Ct-Cq table <em>optional</em></span>
+              <div class="pathrow"><input id="inCp" type="text" placeholder="Cp_Ct_Cq.txt" spellcheck="false"><button class="btn" data-pick="cp" data-for="inCp">Browse…</button></div>
+            </label>
+            <label class="fl">
+              <span class="lab">OpenFAST .fst <em>optional</em></span>
+              <div class="pathrow"><input id="inFst" type="text" placeholder="model.fst" spellcheck="false"><button class="btn" data-pick="fst" data-for="inFst">Browse…</button></div>
+            </label>
+          </details>
+          <div class="fl">
+            <span class="lab">Analysis</span>
+            <div class="seg" id="inMode">
+              <button data-v="open">Open loop</button><button data-v="closed">Closed loop</button><button data-v="both" class="on">Both</button>
+            </div>
+          </div>
+          <label class="chk"><input type="checkbox" id="inAz" checked> Remove rotor-azimuth state (as ROSCO does)</label>
+          <div class="found" id="foundMsg"></div>
+          <div class="actions"><button class="btn primary" id="btnRun" disabled>Run analysis</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Operating points found</h3><span class="muted" id="scanMeta"></span></div>
+        <div id="scanBody" class="scan-empty">Choose a linearisation folder.</div>
+      </div>
+    </div>
+    <div class="card recent" id="recentCard" hidden>
+      <div class="card-h"><h3>Recent</h3></div>
+      <div id="recentList"></div>
+    </div>
+  </section>
+
+  <!-- =============================================================== PROGRESS -->
+  <section id="progress" class="screen" hidden>
+    <div class="prog-grid">
+      <div class="card prog">
+        <div class="prog-head"><h3 id="progTitle">Analysing</h3><span class="muted tnum" id="progTime"></span></div>
+        <div class="bar"><i id="progBar"></i></div>
+        <div class="muted" id="progMsg"></div>
+        <ol class="steps" id="progSteps"></ol>
+        <div class="err" id="progErr" hidden></div>
+        <div class="actions" id="progBack" hidden><button class="btn" onclick="LBApp.showSetup()">Back to inputs</button></div>
+        <div class="actions" id="progDone" hidden><span class="muted" id="progHold"></span><button class="btn primary" id="progOpen">Open results</button></div>
+      </div>
+      <div class="card math">
+        <div class="card-h"><h3 id="mathTitle">What is being computed</h3><a class="muted" href="guide.html#maths" target="_blank">maths reference ↗</a></div>
+        <div id="progMath"></div>
+      </div>
+    </div>
+    <div class="row3 prog-charts">
+      <div class="card"><div class="card-h"><h3>MBC: periodicity removed</h3><span class="sub">per wind speed</span></div><div id="pc1"></div></div>
+      <div class="card"><div class="card-h"><h3>Modes found</h3><span class="sub">natural frequency per wind speed · colour = damping</span></div><div id="pc2"></div></div>
+      <div class="card"><div class="card-h"><h3>Closed-loop margins</h3><span class="sub">✕ = unstable</span></div><div id="pc3"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>Analysis log</h3><span class="sub" id="logMeta"></span></div>
+      <div class="log" id="progLog"></div>
+    </div>
+  </section>
+
+  <!-- =============================================================== RESULTS -->
+  <section id="results" class="screen" hidden>
+    <!-- operating-point bar: the wind speed in use and its operating values (labels above values, like a quote header) -->
+    <div class="ctxbar">
+      <div class="ctx-op">
+        <span class="ctx-k">Wind speed [m/s]</span>
+        <div class="ctx-sel">
+          <button class="ib sm" id="opPrev" title="Previous wind speed (←)" aria-label="Previous wind speed"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+          <div class="chips" id="opChips"></div>
+          <button class="ib sm" id="opNext" title="Next wind speed (→)" aria-label="Next wind speed"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+        </div>
+      </div>
+      <div class="strip" id="opStrip"></div>
+    </div>
+    <div id="panel"></div>
+  </section>
+</main>
+
+<!-- right: the open view's settings, plot options, list of its plots, data export (collapsible) -->
+<aside class="inspector" id="inspector"></aside>
+
+<!-- turbine, model and inputs: shown in a dialog from the data set name in the top bar -->
+<div id="infoStore" hidden>
+  <div class="info-kpis" id="infoKpis"></div>
+  <div class="info-grid" id="infoGrid"></div>
+</div>
+
+<!-- in-app folder browser (used when the system dialog is unavailable) -->
+<div class="modal" id="browser" hidden>
+  <div class="modal-card">
+    <div class="card-h"><h3 id="brTitle">Select folder</h3><button class="btn ghost" id="brClose">Close</button></div>
+    <div class="br-path"><button class="btn" id="brUp">Up</button><input id="brPath" type="text" spellcheck="false"></div>
+    <div class="br-list" id="brList"></div>
+    <div class="actions"><span class="muted" id="brInfo"></span><button class="btn primary" id="brSelect">Select</button></div>
+  </div>
+</div>
+
+<!-- a plot enlarged to the window, settings, and other dialogs -->
+<div class="modal" id="modal" hidden><div class="modal-card" id="modalCard"></div></div>
+
+<!-- command palette (Ctrl+K) -->
+<div class="modal palette" id="palette" hidden>
+  <div class="pal-card">
+    <div class="pal-in"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="palInput" type="text" placeholder="Type a view, a wind speed (e.g. 17) or an action" spellcheck="false" autocomplete="off"></div>
+    <div class="pal-list" id="palList"></div>
+    <div class="pal-foot"><kbd>↑</kbd><kbd>↓</kbd> move · <kbd>Enter</kbd> open · <kbd>Esc</kbd> close</div>
+  </div>
+</div>
+
+<!-- status bar: what is running, the folder in use, the verdict, the version -->
+<footer class="statusbar">
+  <span class="sb st" id="sbState" title="What LinBench is doing"><i></i><span id="sbStateText">Ready</span><span class="sb-bar" id="sbBar" hidden><i id="sbBarFill"></i></span></span>
+  <button class="sb path" id="sbPath" title="Open this folder" hidden></button>
+  <span class="grow"></span>
+  <span class="sb verdict" id="sbVerdict" hidden></span>
+  <span class="sb ver" id="sbVer"></span>
+</footer>
+
+<script src="chart.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

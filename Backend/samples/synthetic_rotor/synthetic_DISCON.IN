@@ -1,0 +1,39 @@
+! Controller parameter input file for the synthetic rotor (LinBench sample; NOT a real turbine)
+!   written by tests/make_synthetic_discon.py: pitch wn=0.25 zeta=0.8, torque wn=0.2 zeta=0.7
+
+!------- CONTROLLER FLAGS -------------------------------------------------
+1                   ! F_LPFType         - 1 = first-order, 2 = second-order low-pass filter
+2                   ! VS_ControlMode    - 2 = TSR tracking PI torque control
+0                   ! VS_ConstPower     - 0 = constant torque above rated
+1                   ! PC_ControlMode    - 1 = PI pitch control
+0                   ! PS_Mode           - no peak shaving
+0                   ! Fl_Mode           - no floating feedback
+2                   ! PA_Mode           - second-order pitch actuator
+0                   ! WE_Mode           - no wind-speed estimator
+
+!------- FILTERS ----------------------------------------------------------
+1.0                 ! F_LPFCornerFreq   - generator-speed low-pass corner [rad/s]
+0.7                 ! F_LPFDamping      - (only for F_LPFType = 2)
+0                   ! F_NumNotchFilts   - number of notch filters
+
+!------- BLADE PITCH CONTROL ----------------------------------------------
+5                   ! PC_GS_n           - gain-schedule points
+0.01257 0.05445 0.1173 0.1801 0.2639   ! PC_GS_angles      - blade pitch [rad]
+-5.06658 -4.9999 -4.89988 -4.79986 -4.6665   ! PC_GS_KP          - proportional gain [s]
+-0.958319 -0.958317 -0.958314 -0.958311 -0.958306   ! PC_GS_KI          - integral gain [-]
+1.267          ! PC_RefSpd         - rated generator speed [rad/s]
+0.0                 ! PC_MinPit         - minimum pitch [rad]
+
+!------- GENERATOR TORQUE CONTROL -----------------------------------------
+55748          ! VS_RtPwr          - rated power [W]
+44000          ! VS_RtTq           - rated torque [N m]
+100.0               ! VS_GenEff         - generator efficiency [%]
+-1.028e+07        ! VS_KP             - torque PI proportional gain [N m s/rad]
+-1.84e+06        ! VS_KI             - torque PI integral gain [N m/rad]
+
+!------- PITCH ACTUATOR ---------------------------------------------------
+1.5708              ! PA_CornerFreq     - actuator natural frequency [rad/s]
+0.707               ! PA_Damping        - actuator damping ratio
+
+!------- DRIVETRAIN -------------------------------------------------------
+1.0                 ! WE_GearboxRatio   - gearbox ratio

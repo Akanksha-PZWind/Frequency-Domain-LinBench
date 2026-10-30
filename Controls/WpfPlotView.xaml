@@ -1,0 +1,48 @@
+<UserControl x:Class="LinBench.Wpf.Controls.WpfPlotView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="350" d:DesignWidth="500">
+    <Grid Background="{DynamicResource BrushPlotBg}" ClipToBounds="True">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Plot Header / Title & Controls -->
+        <DockPanel Grid.Row="0" Margin="12,8,12,4" LastChildFill="True">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <Button Content="Reset" Style="{DynamicResource IconButton}" Click="OnResetZoomClick" ToolTip="Reset view (Double-click plot)" />
+                <Button Content="PNG" Style="{DynamicResource IconButton}" Click="OnExportPngClick" ToolTip="Export plot to PNG image" />
+                <Button Content="CSV" Style="{DynamicResource IconButton}" Click="OnExportCsvClick" ToolTip="Export series data to CSV" />
+            </StackPanel>
+            <TextBlock x:Name="TxtTitle" Text="Plot Title" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" />
+        </DockPanel>
+
+        <!-- Main Plot Area with Canvas -->
+        <Border Grid.Row="1" Margin="12,4,12,8" BorderBrush="{DynamicResource BrushPlotFrame}" BorderThickness="1"
+                Background="{DynamicResource BrushPlotBg}" ClipToBounds="True"
+                MouseDown="OnPlotMouseDown" MouseMove="OnPlotMouseMove" MouseUp="OnPlotMouseUp"
+                MouseWheel="OnPlotMouseWheel" SizeChanged="OnPlotSizeChanged">
+            <Grid>
+                <!-- Canvas hosting drawn visuals -->
+                <Canvas x:Name="PlotCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+
+                <!-- Crosshair overlay readout -->
+                <Border x:Name="CrosshairBadge" HorizontalAlignment="Right" VerticalAlignment="Top"
+                        Background="#E2E8F0" CornerRadius="3" Padding="6,2" Margin="8" Visibility="Collapsed">
+                    <TextBlock x:Name="TxtCrosshair" FontSize="11" FontFamily="Consolas, monospace" Foreground="#1E293B" />
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Bottom Legend & Coordinates -->
+        <DockPanel Grid.Row="2" Margin="12,0,12,6">
+            <TextBlock x:Name="TxtAxisLabel" DockPanel.Dock="Left" Text="" FontSize="11" Foreground="{DynamicResource BrushTextMuted}" />
+            <WrapPanel x:Name="LegendPanel" HorizontalAlignment="Right" Orientation="Horizontal" />
+        </DockPanel>
+    </Grid>
+</UserControl>

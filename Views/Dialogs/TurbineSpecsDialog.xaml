@@ -1,0 +1,29 @@
+<UserControl x:Class="LinBench.Wpf.Views.Dialogs.TurbineSpecsDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="760" d:DesignWidth="1080">
+    <!-- Dataset details (click on the case pill in the top bar), as in the original LinBench:
+         Operating points · Linear model · Controller tiles, notes, Turbine, Operating range, Linear model, Input files.
+         The content is built from /api/summary in the code-behind each time the window opens. -->
+    <Border Background="White" CornerRadius="14" Width="1080" MaxHeight="820" SnapsToDevicePixels="True">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="30" ShadowDepth="6" Opacity="0.25" />
+        </Border.Effect>
+        <DockPanel LastChildFill="True">
+            <Border DockPanel.Dock="Top" BorderBrush="{StaticResource ShellLine}" BorderThickness="0,0,0,1" Padding="20,16,14,14">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="✕" Style="{StaticResource ShellTopIcon}" FontSize="15"
+                            Command="{Binding CloseTurbineSpecsCommand}" ToolTip="Close" />
+                    <TextBlock x:Name="TxtTitle" Text="Dataset" FontSize="19" FontWeight="SemiBold" VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" />
+                </DockPanel>
+            </Border>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel x:Name="Body" Margin="20,18,20,20" />
+            </ScrollViewer>
+        </DockPanel>
+    </Border>
+</UserControl>

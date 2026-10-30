@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LinBench Guide</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M3 20 L8 9 L12 15 L16 5 L21 20%22 fill=%22none%22 stroke=%22%232a78d6%22 stroke-width=%222.5%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="app.css">
+<script>
+  // the theme chosen in LinBench's Settings
+  try { const p = JSON.parse(localStorage.getItem('lb.prefs') || '{}'); const d = document.documentElement.dataset;
+    d.theme = p.theme === 'dark' || (p.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    if (p.contrast) d.contrast = p.contrast; } catch (e) { /* light */ }
+</script>
+<style>
+  .top { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 20px; }
+  .brand .sub { color: var(--ink2); font-size: 13px; }
+  .guide { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 28px; max-width: 1180px; margin: 0 auto; padding: 20px 16px 80px; }
+  .toc { position: sticky; top: 16px; align-self: start; font-size: 13px; max-height: calc(100vh - 32px); overflow: auto; }
+  .toc a { display: block; color: var(--ink2); text-decoration: none; padding: 3px 8px; border-radius: 6px; }
+  .toc a:hover { background: var(--surface); color: var(--ink); }
+  .toc .sub { padding-left: 20px; font-size: 12.5px; }
+  main.doc { margin: 0; padding: 0; max-width: none; }
+  .doc { font-size: 14.5px; line-height: 1.62; color: var(--ink); min-width: 0; }
+  .doc h1 { font-size: 26px; margin: 4px 0 6px; }
+  .doc h2 { font-size: 20px; margin: 38px 0 8px; padding-top: 10px; border-top: 1px solid var(--grid); }
+  .doc h3 { font-size: 15.5px; margin: 22px 0 4px; }
+  .doc p, .doc li { color: var(--ink2); }
+  .doc b, .doc strong { color: var(--ink); }
+  .doc code { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; background: var(--surface); border: 1px solid var(--grid); border-radius: 4px; padding: 0 4px; }
+  .doc .eq { font-family: 'Cambria Math', 'STIX Two Math', 'Times New Roman', serif; font-size: 15.5px; background: var(--surface); border: 1px solid var(--grid); border-radius: 7px; padding: 8px 14px; margin: 8px 0; overflow-x: auto; white-space: nowrap; color: var(--ink); }
+  .doc table { border-collapse: collapse; margin: 8px 0 14px; font-size: 13.5px; width: 100%; }
+  .doc th, .doc td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+  .doc th { color: var(--ink2); font-weight: 600; background: var(--surface); }
+  .doc .tip { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 8px 12px; border-radius: 0 7px 7px 0; margin: 10px 0; font-size: 13.5px; }
+  .doc .warn { border-left: 3px solid var(--crit); padding: 8px 12px; background: var(--surface); border-radius: 0 7px 7px 0; margin: 10px 0; font-size: 13.5px; }
+  .doc ol.steps-g { padding-left: 22px; }
+  .doc ol.steps-g li { margin: 5px 0; }
+  .kbd { font-family: ui-monospace, Consolas, monospace; font-size: 12px; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--card); color: var(--ink); }
+  .doc table { display: block; overflow-x: auto; }
+  @media (max-width: 860px) { .guide { grid-template-columns: minmax(0, 1fr); } .toc { position: static; max-height: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20 L8 9 L12 15 L16 5 L21 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+    <span class="name">LinBench</span><span class="sub">· Guide</span>
+  </div>
+  <div class="top-r"><a class="btn ghost" href="/">Open the app</a></div>
+</header>
+
+<div class="guide">
+<nav class="toc">
+  <a href="#start"><b>Quick start</b></a>
+  <a href="#inputs">Inputs</a>
+  <a href="#run">The Run analysis page</a>
+  <a href="#navigate">Moving around</a>
+  <a class="sub" href="#settings">Settings</a>
+  <a href="#open"><b>Open loop</b></a>
+  <a class="sub" href="#ol-points">Operating points</a>
+  <a class="sub" href="#ol-campbell">Campbell diagram</a>
+  <a class="sub" href="#ol-modes">Modes</a>
+  <a class="sub" href="#ol-tf">Transfer function</a>
+  <a class="sub" href="#ol-time">Time response</a>
+  <a class="sub" href="#ol-sweep">Across wind speeds</a>
+  <a class="sub" href="#ol-struct">Controllability &amp; Hankel</a>
+  <a href="#closed"><b>Closed loop</b></a>
+  <a class="sub" href="#cl-summary">Stability summary</a>
+  <a class="sub" href="#cl-report">Report</a>
+  <a class="sub" href="#cl-loop">Loop shape &amp; Nyquist</a>
+  <a class="sub" href="#cl-poles">Poles &amp; root locus</a>
+  <a class="sub" href="#cl-gains">Gain study</a>
+  <a class="sub" href="#cl-time">Time response</a>
+  <a class="sub" href="#cl-ctrl">Controller &amp; design</a>
+  <a href="#workflows"><b>Workflows</b></a>
+  <a href="#maths"><b>Maths reference</b></a>
+  <a href="#limits">Limits of the linear model</a>
+  <a href="#speed">Speed tips</a>
+  <a href="#trouble">Troubleshooting</a>
+</nav>
+
+<main class="doc">
+<h1>LinBench usage guide</h1>
+<p>LinBench analyses OpenFAST linearisations with or without a ROSCO controller: open-loop modes and responses, closed-loop stability and margins, and how both change with wind speed and controller gains. It runs on your PC; the page in your browser talks to a local Python server (the console window).</p>
+
+<h2 id="start">Quick start</h2>
+<ol class="steps-g">
+  <li>Start LinBench: unzip <code>LinBench-&lt;version&gt;-win64.zip</code> on any Windows 10/11 PC and double-click <code>LinBench.exe</code>: nothing to install, no internet. It opens as its own window; closing the window stops LinBench, and starting it again brings the open window to the front. The first start on another PC may show <i>Windows protected your PC</i> (SmartScreen): <b>More info → Run anyway</b>. From source: <code>python -m linbench</code> (opens in the browser if the window engine is not installed; keep the console open). LinBench keeps to your PC: any connection other than to itself is refused. Errors are written to <code>%USERPROFILE%\.linbench\linbench_error.log</code>.</li>
+  <li>Pick the <b>linearisation folder</b> (the <code>.lin</code> files for all wind speeds and azimuths). The table on the right lists the operating points found.</li>
+  <li>For closed-loop results pick the <b>DISCON.IN</b>. A DISCON in the same folder, or one level up, is picked up automatically. A ROSCO tuning <b>YAML</b> fills in the other paths and adds the ω<sub>pc</sub>/ζ<sub>pc</sub> design targets.</li>
+  <li>Choose <b>Open loop</b>, <b>Closed loop</b> or <b>Both</b> and press <b>Run analysis</b>. The Run analysis page shows each step and its maths while it works.</li>
+  <li>Pick an operating point with the wind-speed chips at the top (or <span class="kbd">←</span> <span class="kbd">→</span>) and open the views in the list on the left, or press <span class="kbd">Ctrl</span> <span class="kbd">K</span> and type what you are looking for.</li>
+</ol>
+<div class="tip"><b>Try it without your own data:</b> the folder <code>samples/synthetic_rotor</code> holds a synthetic 3-bladed rotor with blade DOFs and <code>synthetic_DISCON.IN</code>, a ROSCO-style controller tuned for it. Every screen, including the gain study, works on it. It is synthetic data, not a real turbine.</div>
+
+<h2 id="inputs">Inputs</h2>
+<table>
+  <tr><th>Input</th><th>Needed for</th><th>Notes</th></tr>
+  <tr><td>Linearisation folder</td><td>everything</td><td>Any file names. Operating points are grouped and ordered by the wind speed, rotor speed and azimuth written <i>inside</i> each file. Tick <i>include sub-folders</i> if they are split up.</td></tr>
+  <tr><td><code>DISCON.IN</code></td><td>closed loop, gain study</td><td>PI gain schedule, filters, notches, floating feedback, pitch actuator, torque control mode.</td></tr>
+  <tr><td>ROSCO tuning YAML</td><td>optional</td><td>Fills the other paths and gives the ω<sub>pc</sub>, ζ<sub>pc</sub> targets; the tuned gains are marked on the gain-study map.</td></tr>
+  <tr><td>Cp-Ct-Cq table, <code>.fst</code></td><td>optional</td><td>Used by the 1-DOF design-model comparison; usually found from the DISCON or YAML.</td></tr>
+</table>
+<p><b>Remove rotor-azimuth state</b> (on by default) drops the generator-azimuth position state after MBC, as ROSCO does; otherwise it pairs with rotor speed into a fictitious real pole pair.</p>
+
+<h2 id="run">The Run analysis page</h2>
+<p>While the analysis runs you see:</p>
+<ul>
+  <li><b>Steps</b> with a tick and the time each one took. Click a step to show its maths.</li>
+  <li><b>What is being computed</b>: the equations of the current step and why the step matters.</li>
+  <li><b>Live charts</b>, filled in point by point:
+    <ul>
+      <li><i>MBC: periodicity removed</i>: how periodic the model is over azimuth, before and after the Coleman transform. After MBC it should drop by orders of magnitude; what is left is real rotor anisotropy.</li>
+      <li><i>Modes found</i>: natural frequency per wind speed, coloured by damping (red = unstable). This is an early Campbell diagram.</li>
+      <li><i>Closed-loop margins</i>: gain and phase margin per wind speed; ✕ marks an unstable closed loop.</li>
+    </ul></li>
+  <li><b>Analysis log</b>: one line per result: model size, periodicity, least-damped mode, gains, stable/unstable with the Nyquist bookkeeping (Z, P, N), margins. Unstable points are shown in red.</li>
+</ul>
+<p>Results open by themselves <b>as soon as the open-loop part is ready</b>. The closed loop is computed afterwards, selected wind speed first; the <b>Closed loop</b> views in the list on the left show a counter and switch on when it is done. If you click or scroll on the page, it stays open and shows an <b>Open results</b> button instead. You can get back to it later from <b>⋯ → Analysis log</b> in the top bar.</p>
+<p><b>Repeat runs are instant.</b> Processed results are stored in <code>~/.linbench/cache</code> and reused when no <code>.lin</code> file changed (name, size, date). Changing any file, or updating LinBench, recomputes. Delete that folder to clear it.</p>
+
+<h2 id="navigate">Moving around</h2>
+<p>The window has four parts:</p>
+<ul>
+  <li><b>Top bar</b>: ☰ (view names or icons only), the data set (its dot is the closed-loop verdict; click it for the specification sheet: headline figures, turbine constants with their source, operating range, linear model, ROSCO settings in words with their DISCON names, gain schedules, notches, input files), the search box (<span class="kbd">Ctrl</span> <span class="kbd">K</span>), <b>Report</b> (page icon), <b>Settings</b> (gear, <span class="kbd">Ctrl</span> <span class="kbd">,</span>) and <b>⋯</b> (New analysis, Analysis log, this guide, keyboard shortcuts).</li>
+  <li><b>View list</b> on the left: seven open-loop and seven closed-loop views. The closed-loop group is greyed out without a DISCON and shows a counter while it is computed.</li>
+  <li><b>Workspace</b>: at the top, a row with the wind speeds (‹ › or <span class="kbd">←</span> <span class="kbd">→</span>; the dot is the closed-loop verdict there) and below it that point's values in three groups: operating point (rotor, pitch, generator torque, power, TSR, Cp), controller (loop, Kp, Ki) and design model (A, B). The plots scroll below.</li>
+  <li><b>Status bar</b>: what is running (with percentage), the folder in use (click to open it), the closed-loop verdict and the version.</li>
+</ul>
+<p><b>Side panel</b> on the right (panel icon in the top bar shows or hides it); its sections fold and stay as you left them:</p>
+<ul>
+  <li><i>View settings</i> — the view's own choices (input and output, quick picks, channels, check boxes, max frequency);</li>
+  <li><i>Insights</i> — a verdict line (green / amber / red) and tiles with the figures that matter. <i>Transfer function</i>: G(s) in factored form, steady-state gain and sign, bandwidth, dominant and lightly damped modes, the bandwidth limit set by right-half-plane zeros, modes not in this pair, pole / zero lists. <i>Loop shape</i>: margins against their targets (6 dB, 45°, s<sub>m</sub> 0.5), the limiting one, crossover and loop time constant, peak sensitivity, delay and disk margins, bandwidth and peak of T. <i>Stability summary</i>: stable or not at every wind speed, the weakest wind speed and the worst margins (click a tile to go to that wind speed), least-damped closed-loop mode, Nyquist check;</li>
+  <li><i>Results</i> — the numbers of every plot, under the plot's name (click the name to jump to it); explanations are folded under "ⓘ Notes";</li>
+  <li><i>Plots</i> — legend, cursor, grid, line width; <i>In this view</i> — jump to any plot or table; <i>Data</i> — one CSV with the curves of all plots in the view.</li>
+</ul>
+<p>The middle then shows only plots and tables; a view with a single plot (Nyquist, Modes, Time response) uses the full height. With the panel closed the numbers are shown on the cards again (a red dot marks a value that needs attention). In a narrow window the panel floats over the plots.</p>
+<p><b>Cursor.</b> The box with the values of all curves appears only when the cursor is on a computed point; between points only the coloured tags show. Pointing at a plot shows dotted lines in both axes with the x and y values on the axes, and for each curve its value at the cursor, labelled at the right edge in the curve's colour (filled dot: a computed point; hollow dot: read off the line between points). Plots of the same x quantity follow along: on Operating points every wind-speed plot shows the same wind speed; Bode magnitude and phase share the frequency. <i>Settings → Crosshair</i> switches to a vertical line only, or off.</p>
+<p><b>Search</b> (<span class="kbd">Ctrl</span> <span class="kbd">K</span>) finds a view (also by words such as <i>bode</i>, <i>margins</i>, <i>eigenvalues</i>, <i>hankel</i>), a wind speed (type the number), an action (report, new analysis) or a quick setting (Hz, dark theme, legends, crosshair).</p>
+<p>Move the pointer onto a plot and its tools appear: <b>Enlarge</b> (the plot — or both plots of a Bode diagram — as large as the window; Esc or <b>Close</b> returns), <b>+ / −</b>, <b>Box zoom</b>, <b>Reset</b>, <b>PNG / SVG / CSV</b>. Curves are named in a boxed legend inside the axes. A plot with many curves (more than 6 by default) shows only <b>▸ N/M curves</b>; click it for a scrolling list with <b>all / none</b>.</p>
+<table>
+  <tr><th>Action</th><th>How</th></tr>
+  <tr><td>Change operating point</td><td>wind-speed chips, ‹ ›, a row in any table, <span class="kbd">←</span> <span class="kbd">→</span>, or type the wind speed in <span class="kbd">Ctrl</span> <span class="kbd">K</span></td></tr>
+  <tr><td>Pan a plot</td><td>drag it (mouse or touch). Bode, loop-shape, controller and time-response curves are recomputed for the new range, so they never end at the edge of the data.</td></tr>
+  <tr><td>Zoom</td><td><span class="kbd">Ctrl</span>/<span class="kbd">⌘</span> + wheel or a trackpad pinch (zooms about the cursor), or the <b>+ / −</b> buttons</td></tr>
+  <tr><td>Zoom box</td><td><span class="kbd">Shift</span> + drag, or switch on <b>Box zoom</b>. A flat box zooms x only; a tall box zooms y only.</td></tr>
+  <tr><td>Reset the view</td><td>double-click the plot or <b>Reset</b></td></tr>
+  <tr><td>Hide a curve</td><td>click its legend entry</td></tr>
+  <tr><td>Only one curve</td><td>double-click its legend entry (double-click again: all curves)</td></tr>
+  <tr><td>Find a curve</td><td>point at its legend entry: the other curves fade</td></tr>
+  <tr><td>Export</td><td><b>PNG</b>, <b>SVG</b> (vector) or <b>CSV</b> (data) on every plot; a heatmap exports as a grid</td></tr>
+  <tr><td>Whole analysis in one file</td><td><b>Report</b> (page icon in the top bar): see <a href="#cl-report">Report</a></td></tr>
+  <tr><td>All shortcuts</td><td><span class="kbd">?</span> or ⋯ → Keyboard shortcuts</td></tr>
+</table>
+<h3 id="settings">Settings</h3>
+<p>The gear (or <span class="kbd">Ctrl</span> <span class="kbd">,</span>). Saved on this PC and applied at once; <b>Restore defaults</b> resets them.</p>
+<table>
+  <tr><th>Group</th><th>Setting</th><th>Choices (default first)</th></tr>
+  <tr><td>Units</td><td>Frequency axis of the control plots</td><td>rad/s, Hz (Campbell diagrams are always in Hz)</td></tr>
+  <tr><td>Appearance</td><td>Theme</td><td>Light, Dark, System (follows Windows)</td></tr>
+  <tr><td></td><td>Density</td><td>Normal, Compact, Roomy</td></tr>
+  <tr><td></td><td>Text and plot size</td><td>100 %, 90 %, 110 %, 125 %</td></tr>
+  <tr><td></td><td>View list</td><td>Names, Icons (also ☰ or <span class="kbd">Ctrl</span> <span class="kbd">B</span>)</td></tr>
+  <tr><td>Plots</td><td>Legend</td><td>Auto (inside the axes, folded above the limit), Inside, Beside (a column right of the plot), Above, Off</td></tr>
+  <tr><td></td><td>Fold legends above</td><td>6, 4, 10, never</td></tr>
+  <tr><td></td><td>Plot height</td><td>Normal (1.3×), Compact, Tall</td></tr>
+  <tr><td></td><td>Line width</td><td>Normal, Thin, Bold</td></tr>
+  <tr><td></td><td>Grid</td><td>On, Fine (minor lines on linear axes too), Off</td></tr>
+  <tr><td></td><td>Crosshair</td><td>Full (both lines, values on the axes and per curve, shared by related plots), Vertical, Off</td></tr>
+  <tr><td></td><td>Plot tools</td><td>On hover, Always (in the plot's title row)</td></tr>
+  <tr><td>Accessibility</td><td>Curve colours</td><td>MATLAB, Colour-blind safe (Okabe–Ito), Vivid</td></tr>
+  <tr><td></td><td>Contrast</td><td>Normal, High</td></tr>
+  <tr><td></td><td>Motion</td><td>Normal, Reduced (no animations)</td></tr>
+</table>
+
+<h2 id="open">Open loop</h2>
+<h3 id="ol-points">Operating points</h3>
+<p>Trim values against wind speed (rotor speed, pitch, power, torque, TSR, Cp/Ct) and a table with the periodicity index before and after MBC. Check that the sweep is complete and the trim looks physical before reading anything else.</p>
+<h3 id="ol-campbell">Campbell diagram</h3>
+<p>Every structural mode is tracked across wind speeds by mode shape (MAC), so lines do not jump where frequencies cross. Line and marker style show symmetry: collective, backward whirl or forward whirl. The 1P/3P/6P/9P lines are drawn, and the closest approach of any mode to 1P, 3P and 6P is reported. Below it is damping against wind speed, which is where aero-elastic instabilities show first.</p>
+<p><b>Loop: open / closed.</b> <i>Closed</i> shows the modes with the ROSCO controller in the loop at every wind speed. The open-loop tracks stay as thin grey lines, so you can see which modes the controller shifts or un-damps, and the controller's own modes (PI integrator, actuator, filters) are added. It needs a DISCON and is available once the closed loop has been computed.</p>
+<div class="tip">Blade modes and whirl need blade DOFs in the linearisation (ElastoDyn FlapDOF/EdgeDOF or BeamDyn). A banner tells you when there are none.</div>
+<h3 id="ol-modes">Modes</h3>
+<p>Eigenvalues at one operating point in the s-plane, with ζ = 5 %, 20 % and 50 % guide lines, and a table of modes. Click a row for its participation factors: which physical DOFs make up the mode.</p>
+<h3 id="ol-tf">Transfer function</h3>
+<p>Bode diagram and pole-zero map for any input → output (quick-pick buttons for the usual control pairs). Reported: DC gain, peak, bandwidth, <b>right-half-plane zeros</b> (non-minimum phase; the pitch → generator-speed zero limits the achievable bandwidth), and poles cancelled by zeros (modes the input does not excite or the output does not see).</p>
+<h3 id="ol-time">Time response</h3>
+<p>Exact step or impulse response of the linear model for any channel pair, with overshoot, rise and settling times. Pan right to run the response longer; it is recomputed as you go.</p>
+<h3 id="ol-sweep">Across wind speeds</h3>
+<p>The same transfer function at every operating point on one Bode plot (dark = high wind), plus DC gain and resonance frequency against wind speed. Use it to see how much the plant changes over the gain schedule.</p>
+<h3 id="ol-struct">Controllability &amp; Hankel</h3>
+<p>For a chosen set of inputs and outputs (the control set pitch + torque → generator speed, platform pitch, nacelle acceleration, or any single pair):</p>
+<ul>
+  <li><b>Kalman ranks</b>: how many states are controllable and observable, the minimal order, and which modes are uncontrollable or unobservable. Stabilisable/detectable says whether every such mode is at least stable.</li>
+  <li><b>Controllability–observability plane</b>: one point per mode. Bottom-left modes are hard to both excite and see, so a controller on these channels cannot damp them.</li>
+  <li><b>Eigenvalues by modal Hankel value</b>: which modes dominate the input → output energy.</li>
+  <li><b>Hankel singular values</b>: the energy ranking of the balanced states, and the order a reduced model needs for a given error bound.</li>
+  <li>The same measures <b>across wind speeds</b>.</li>
+</ul>
+
+<h2 id="closed">Closed loop</h2>
+<p>The ROSCO controller rebuilt from DISCON.IN is closed around the linearisation at every operating point. The region is chosen from the trim: <b>Region 3</b> (pitch PI) when the rotor is at rated speed, otherwise <b>Region 2</b> (torque PI). You can override the region per point in the Stability summary table.</p>
+<h3 id="cl-summary">Stability summary</h3>
+<p>Stable/unstable at each point; gain margin, phase margin, stability margin s<sub>m</sub> = 1/‖S‖∞ and the least-damped closed-loop mode against wind speed; and a table with every number, including delay margin and the Nyquist check P → Z.</p>
+<table>
+  <tr><th>Quantity</th><th>Common guide</th><th>Meaning</th></tr>
+  <tr><td>Gain margin</td><td>≥ 6 dB</td><td>how much the loop gain can grow before instability</td></tr>
+  <tr><td>Phase margin</td><td>≥ 30–45°</td><td>extra phase lag (e.g. delay) tolerated at crossover</td></tr>
+  <tr><td>s<sub>m</sub> = min |1+L|</td><td>≥ 0.4–0.5</td><td>closest approach to −1; covers gain and phase at once</td></tr>
+  <tr><td>‖S‖∞</td><td>≤ 6–8 dB</td><td>largest disturbance amplification</td></tr>
+  <tr><td>Disk margin</td><td>about ±6 dB / ±37°</td><td>gain <i>and</i> phase off at the same time</td></tr>
+</table>
+<p><b>Disk margin.</b> "±5.5 dB and ±34°" means the loop stays stable when the gain is off by up to 5.5 dB <i>and</i> the phase by up to 34° at the same time. Gain and phase margins each assume only one of them is off, so the disk margin is smaller and closer to reality.</p>
+<p><b>Loop delay [ms].</b> The controller runs once per time step, which acts like a delay in the loop. The default is 1.5 × DT when the <code>.fst</code> is given (half a step for the hold, one step for the controller call); otherwise type it, e.g. 37.5 for DT = 25 ms. Leave it empty for no delay. The charts get a dashed "with delay" curve, the table a <i>PM with delay</i> column, and the header says whether every point is still stable.</p>
+<p><b>Pitch–torque interaction.</b> Around rated wind speed both PI loops act on generator speed. The card closes both at once and compares with each loop alone: the phase margin of each loop with and without the other, the coupling in dB (how much the torque loop changes the gain the pitch loop sees at its crossover), and whether the combination is stable. Two integrators on one measurement always leave one pole at the origin; ROSCO's set-point smoother, which is not part of the linear model, decides which loop holds the speed.</p>
+<p><b>Region → Both loops (R2½)</b> in the table closes both loops at that wind speed for every closed-loop tab (loop shape, Nyquist, poles, gain study, time response).</p>
+<h3 id="cl-report">Report</h3>
+<p><b>Report</b> (page icon in the top bar) builds one self-contained HTML file: a summary verdict, inputs, warnings, operating points, open- and closed-loop Campbell diagrams, the stability table with margins (and delay, if set), gain headroom, pitch–torque interaction and the scope of the analysis. It opens in a new tab and is also downloaded; use <b>Print / save as PDF</b> in it. If the browser blocks the new tab, the downloaded file is the same.</p>
+<h3 id="cl-loop">Loop shape &amp; Nyquist</h3>
+<p>|L|, ∠L, |S| and |T| with every crossover marked, and the Nyquist curve with the s<sub>m</sub> circle around −1. Use <b>Near −1</b> and <b>Fit all</b> to change the Nyquist view.</p>
+<h3 id="cl-poles">Poles &amp; root locus</h3>
+<p>Closed-loop poles (filled) over open-loop poles (hollow), labelled by participation (plant DOF or controller block). The root locus scales the whole loop gain by k; the first unstable k is the gain margin as a factor.</p>
+<h3 id="cl-gains">Gain study</h3>
+<p>Answers <i>"what happens to stability if the gains change?"</i> at the selected operating point and across wind speeds.</p>
+<ol class="steps-g">
+  <li><b>Stability map.</b> Each cell is one closed loop with <code>Kp × x</code> and <code>Ki × y</code> (factors on the DISCON gains; 1 × 1 is DISCON, marked ◆). Colour shows the damping of the <b>speed-loop pole</b>, the pole ROSCO places with ω<sub>pc</sub>/ζ<sub>pc</sub>, or of the least-damped pole the gains can move. <b>Red</b> means some closed-loop pole is unstable. The thick line is the stability boundary; the dashed line is the ζ contour you choose.</li>
+  <li><b>Click any cell</b> (or type factors and press <b>Analyse</b>) to see those gains against DISCON: margins, s<sub>m</sub>, ‖S‖∞, speed-loop ω<sub>n</sub>/ζ, closed-loop poles, Nyquist near −1, and the step response of generator speed and pitch command to a 1 m/s wind step. Values outside the usual guides are shown in red.</li>
+  <li><b>PI gain scaling across wind speeds.</b> Both PI gains are scaled together by k at every operating point. The solid line is the largest stable k, the dashed line the smallest, and the table gives the <b>gain headroom</b> (20·log₁₀ k<sub>max</sub>). Click a cell to open that wind speed and factor in the map above.</li>
+</ol>
+<p>Options: vary <b>Kp × Ki</b>, or <b>PI × floating</b> (both PI gains against Fl_Kp) when floating feedback is on; the range (×0.5–2, ×0.25–4, ×0.1–10); resolution 15², 25² or 41²; and what the colour shows.</p>
+<div class="tip">Modes the gains cannot move, because the actuator cannot excite them or the sensors cannot see them, are listed under the map. They are left out of the colour so they do not hide the effect of the gains. They still count towards stable/unstable.</div>
+<div class="warn">Factors apply to the gains <i>at this operating point</i>. To carry a choice into DISCON, multiply the scheduled <code>PC_GS_KP</code>/<code>PC_GS_KI</code> near this pitch angle, then re-run the analysis to check every wind speed.</div>
+<h3 id="cl-time">Time response</h3>
+<p>Closed- against open-loop response to a step or impulse on any plant input (wind by default), for a plant output or the controller command, plus the disturbance-rejection frequency response.</p>
+<h3 id="cl-ctrl">Controller &amp; design</h3>
+<p>The pitch gain schedule (DISCON and YAML), the controller frequency response with every filter, and the ROSCO 1-DOF design model (A, B) from the linearisation, the Cp table and ROSCO's tuning. The ω<sub>n</sub>/ζ targets are compared with what the DISCON gains imply and what the full closed loop achieves.</p>
+
+<h2 id="workflows">Workflows</h2>
+<h3>Is the turbine stable, and with what margin?</h3>
+<ol class="steps-g">
+  <li>Closed loop → <b>Stability summary</b>: any ✕? Worst GM, PM and s<sub>m</sub>, and at which wind speed.</li>
+  <li>Open that wind speed → <b>Poles</b>: which mode is unstable or least damped (plant DOF or controller block)?</li>
+  <li><b>Gain study</b> → PI gain scaling: how much headroom each wind speed has, and whether the problem is too much or too little gain.</li>
+  <li>If a structural mode is the problem, check <b>Controllability &amp; Hankel</b>: a mode the controller cannot see or excite cannot be fixed by the PI gains.</li>
+</ol>
+<h3>Retuning the pitch loop at one wind speed</h3>
+<ol class="steps-g">
+  <li>Gain study, colour by <i>speed-loop damping</i>, contour at your target ζ (e.g. 0.7).</li>
+  <li>Click candidate cells along the contour and compare GM, PM, s<sub>m</sub> and the pitch-command step (actuator effort).</li>
+  <li>Check neighbouring wind speeds with <span class="kbd">←</span> <span class="kbd">→</span>, then transfer the factors into the DISCON schedule and re-run.</li>
+</ol>
+<h3>Same wind speed, azimuths at different rotor speeds</h3>
+<p>All azimuth files of one wind speed should describe <i>one</i> equilibrium. If the rotor speed differs between them, LinBench keeps them together (a wind speed is split only when its azimuths repeat, i.e. two complete sets). It then diagnoses the difference from the rotor speed Ω, azimuth ψ and simulation time t in each header:</p>
+<table>
+  <tr><th>Pattern</th><th>Test</th><th>Meaning</th><th>What to do</th></tr>
+  <tr><td><b>drift</b></td><td>Ω follows t (adjusted R² of Ω ~ a + b·t ≥ 0.8)</td><td>rotor still accelerating; trim not converged</td><td>OpenFAST: <code>CalcSteady = True</code>, tighter <code>TrimTol</code>, or linearise later (<code>LinTimes</code>/<code>TMax</code>)</td></tr>
+  <tr><td><b>periodic</b></td><td>Ω follows ψ (1P + 3P Fourier fit)</td><td>tower-shadow / shear ripple of a converged periodic trim</td><td>expected; MBC already uses each file's own Ω</td></tr>
+  <tr><td><b>scatter</b></td><td>neither</td><td>files from different runs or settings</td><td>check the files' origin and inputs</td></tr>
+</table>
+<p>Warning level: drift or scatter ≥ 0.5 % (peak to peak), periodic ≥ 2 %; a notice from 0.1 % (0.5 % for periodic). Where it shows:</p>
+<ol class="steps-g">
+  <li><b>Setup</b> scan table: the Rotor column shows ±spread, with the diagnosis in Notes.</li>
+  <li><b>Run analysis</b> log: a red <i>WARNING</i> line with the Ω range.</li>
+  <li><b>Operating points</b> tab → <i>Rotor speed across the azimuth files</i>: each file's rotor speed as a deviation (%) from the mean at its wind speed. The files of one wind speed are spread a little sideways in azimuth order (0° left, 360° right) and joined. A clean set is a flat line at 0; <b>drift</b> is a slope; <b>1P/3P ripple</b> is a wave. The dashed lines at ±0.25 % mark the warning level for drift and scatter (0.5 % peak to peak); red = warning, amber = notice. The shaded strip is the selected wind speed.</li>
+  <li><i>Rotor speed … in the order it was linearised</i>: Ω against the simulation time in each file header, labelled by azimuth. A straight rising or falling line means the rotor was still accelerating: the trim had not converged, so the linearisations are not one equilibrium.</li>
+  <li><i>Azimuth files</i> table: each file's azimuth, time, Ω, ΔΩ, pitch, generator torque and generator speed. If pitch and torque also move between files, the controller was still acting during the sweep.</li>
+  <li><b>Does it matter?</b> Each azimuth file is also MBC-transformed on its own. The <b>Δf / Δζ</b> columns (largest change of any mode for that file) and the <i>Mode frequency in each single-azimuth model</i> chart show how far each mode would move if you trusted that one file instead of the average. Whirl modes react most, because their frequencies shift with ±Ω.</li>
+</ol>
+<p>Try it on <code>samples/rotor_speed_drift</code> (17 m/s linearised while the rotor sped up by 3 %).</p>
+<h3>Checking a new linearisation set</h3>
+<ol class="steps-g">
+  <li>Run analysis page: periodicity after MBC should be small; a large value means an unexpected rotor setup or a missing azimuth.</li>
+  <li>Operating points: is the trim smooth over wind speed?</li>
+  <li>Campbell diagram: are there crossings with 1P/3P, or damping near zero?</li>
+</ol>
+
+<h2 id="maths">Maths reference</h2>
+<h3>Multi-blade coordinates (MBC)</h3>
+<p>Blade <i>b</i> is at ψ<sub>b</sub> = ψ + 2π(<i>b</i>−1)/3. Each triplet of blade states maps to collective, cosine and sine components:</p>
+<div class="eq">x<sub>rot</sub> = T(ψ) x<sub>nr</sub>,&nbsp; T = [[T₁, 0], [Ω T₂, T₁]] (2nd-order DOFs),&nbsp; T₁ rows = [1, cos ψ<sub>b</sub>, sin ψ<sub>b</sub>]</div>
+<div class="eq">A<sub>nr</sub> = T⁻¹(A T − Ṫ),&nbsp; B<sub>nr</sub> = T⁻¹ B T<sub>1u</sub>,&nbsp; C<sub>nr</sub> = T<sub>1y</sub>⁻¹ C T,&nbsp; D<sub>nr</sub> = T<sub>1y</sub>⁻¹ D T<sub>1u</sub></div>
+<p>The model is then averaged over the N azimuths: Ā = (1/N) Σ A<sub>nr</sub>(ψ<sub>k</sub>). Periodicity index = max<sub>k</sub> ‖A(ψ<sub>k</sub>) − Ā‖ / ‖Ā‖. Averaging removes the periodic part of the matrices; it does not limit the bandwidth of the averaged model. Reference: G. Bir, AIAA 2008-1300.</p>
+<h3>Modes</h3>
+<div class="eq">A v<sub>k</sub> = λ<sub>k</sub> v<sub>k</sub>,&nbsp; W = V⁻¹,&nbsp; f<sub>n</sub> = |λ|/2π,&nbsp; f<sub>d</sub> = |Im λ|/2π,&nbsp; ζ = −Re λ/|λ|</div>
+<div class="eq">participation p<sub>ik</sub> = |w<sub>ki</sub> v<sub>ik</sub>| / Σ<sub>i</sub> |w<sub>ki</sub> v<sub>ik</sub>|</div>
+<p>Participation is summed per physical DOF (position, velocity and hydrodynamic states of the same DOF). For a cyclic rotor pair with components C (cos) and S (sin): forward whirl if |C + jS| ≫ |C − jS|, backward whirl if the reverse.</p>
+<h3>Mode tracking (Campbell)</h3>
+<div class="eq">MAC<sub>ij</sub> = |v<sub>i</sub>ᴴ v<sub>j</sub>|² / (‖v<sub>i</sub>‖²‖v<sub>j</sub>‖²),&nbsp;&nbsp; cost = (1 − MAC) + 0.6 |ln(f<sub>j</sub>/f<sub>i</sub>)| + family penalty</div>
+<p>Modes at neighbouring wind speeds are paired by the optimal (Hungarian) assignment on this cost.</p>
+<h3>Transfer functions</h3>
+<div class="eq">G(s) = c (sI − A)⁻¹ b + d = Σ<sub>k</sub> r<sub>k</sub>/(s − λ<sub>k</sub>) + d,&nbsp;&nbsp; r<sub>k</sub> = (c v<sub>k</sub>)(w<sub>k</sub> b)</div>
+<p>A mode with r<sub>k</sub> ≈ 0 is not excited or not observed; its pole is cancelled by a zero. Zeros are the finite generalised eigenvalues of [[A, b], [c, d]] on the significant modes. Plots in the browser use this pole/residue form. Each export is checked against the direct state-space result before it is used, so curves can be redrawn over any range.</p>
+<h3>Closed loop, margins and Nyquist</h3>
+<div class="eq">L(s) = −K(s) G(s) (loop broken at the actuator),&nbsp; S = 1/(1 + L),&nbsp; T = L/(1 + L)</div>
+<div class="eq">GM: ∠L(jω) = −180°, GM = −1/Re L;&nbsp;&nbsp; PM: |L(jω)| = 1;&nbsp;&nbsp; s<sub>m</sub> = min<sub>ω</sub> |1 + L(jω)|;&nbsp;&nbsp; delay margin = PM/ω<sub>c</sub></div>
+<div class="eq">Nyquist: Z = N + P (Z closed-loop RHP poles, P open-loop RHP poles, N clockwise encirclements of −1)</div>
+<div class="eq">Disk margin: α = 1/max<sub>ω</sub>|S(jω) − ½|;&nbsp; gain within [1/g, g], g = (2+α)/(2−α), and phase within ±2·atan(α/2), together</div>
+<div class="eq">Loop delay: L<sub>τ</sub>(s) = L(s)·e<sup>−sτ</sup>, default τ = 1.5·DT;&nbsp; each PM drops by ω<sub>c</sub>τ;&nbsp; stability from Z = N + P on L<sub>τ</sub></div>
+<p>Both loops: the torque PI (or the pitch PI) is kept closed as a secondary loop while the other is opened for L; coupling = −20·log₁₀|1 + L<sub>torque</sub>(jω<sub>c</sub>)| dB. Closed-loop Campbell: modes of the closed-loop A, labelled from the most similar open-loop mode shape (MAC) or from the controller block, and tracked like the open-loop modes.</p>
+<p>Crossings are found by root-finding on the exact L(jω), not read from a grid. Stability is decided from the eigenvalues of the closed-loop A and cross-checked with the Nyquist count.</p>
+<h3>Controllability, observability, Hankel singular values</h3>
+<div class="eq">PBH: mode k uncontrollable ⇔ w<sub>k</sub> B = 0;&nbsp; unobservable ⇔ C v<sub>k</sub> = 0</div>
+<div class="eq">c<sub>k</sub> = |w<sub>k</sub>B| / (|w<sub>k</sub>||B|),&nbsp; o<sub>k</sub> = |Cv<sub>k</sub>| / (|C||v<sub>k</sub>|)&nbsp; (Hamdan–Nayfeh angle measures)</div>
+<div class="eq">A W<sub>c</sub> + W<sub>c</sub>Aᵀ + BBᵀ = 0,&nbsp; AᵀW<sub>o</sub> + W<sub>o</sub>A + CᵀC = 0,&nbsp; σ<sub>i</sub> = √λ<sub>i</sub>(W<sub>c</sub>W<sub>o</sub>)</div>
+<p>Ranks come from the orthogonal staircase (Kalman decomposition), not from the ill-conditioned matrix [B AB A²B …]. HSVs are computed for the stable part; unstable modes are split off first (ordered Schur form + Sylvester equation) and counted separately. Balanced truncation to order r has H∞ error ≤ 2 Σ<sub>i&gt;r</sub> σ<sub>i</sub>.</p>
+<h3>Gain study</h3>
+<div class="eq">A<sub>cl</sub>(k<sub>p</sub>K<sub>p</sub>, k<sub>i</sub>K<sub>i</sub>) → λ<sub>j</sub>;&nbsp; stable ⇔ max Re λ<sub>j</sub> ≤ 0</div>
+<p><b>Speed-loop pole</b>: the closed-loop pole below 0.5 Hz with the largest participation of the rotor-speed state and the PI integrator. <b>Least-damped moved pole</b>: min ζ over closed-loop poles below 2 Hz that differ from every open-loop pole. The PI-scaling limits are refined by bisection; with no floating feedback, the upper limit equals the gain margin as a factor. ROSCO's design rule on the 1-DOF model ω̇ = Aω + Bβ:</p>
+<div class="eq">K<sub>p</sub> = (2ζω<sub>n</sub> + A)/B,&nbsp;&nbsp; K<sub>i</sub> = ω<sub>n</sub>²/B</div>
+
+<h2 id="limits">Limits of the linear model</h2>
+<ul>
+  <li>Small perturbations about each trim point: no saturation, rate limits, set-point smoothing, peak shaving or wind-speed estimator dynamics.</li>
+  <li>The controller is continuous-time. Its time step is represented only by the optional loop delay in the Stability summary; filter discretisation is not modelled.</li>
+  <li>Azimuth averaging assumes a close-to-isotropic rotor. Check the periodicity index after MBC.</li>
+  <li>Near rated (Region 2½) both loops may be active or saturated. Use the region override and treat these points with care.</li>
+</ul>
+
+<h2 id="speed">Speed tips</h2>
+<ul>
+  <li>Results are cached: going back to a tab, an operating point or a gain map you already opened is instant.</li>
+  <li>Start the gain study at 25² and switch to 41² only for the final picture.</li>
+  <li>Plots use fewer points while you drag and full detail when you release.</li>
+  <li>Large sets (hundreds of files): reading and MBC is the longest step, as the Run analysis page shows. Put only the wind speeds you need in the folder.</li>
+</ul>
+
+<h2 id="trouble">Troubleshooting</h2>
+<table>
+  <tr><th>Symptom</th><th>What to check</th></tr>
+  <tr><td>"No OpenFAST .lin files found"</td><td>the folder, or tick <i>include sub-folders</i></td></tr>
+  <tr><td>Closed loop tab greyed out</td><td>give a DISCON.IN and choose <i>Closed loop</i> or <i>Both</i></td></tr>
+  <tr><td>No blade or whirl modes</td><td>the linearisation has no blade DOFs (see the banner)</td></tr>
+  <tr><td>"rotor speed drifts / differs … across azimuths"</td><td>see <a href="#workflows">Same wind speed, azimuths at different rotor speeds</a></td></tr>
+  <tr><td>Unstable at 1–2 points near rated</td><td>check the region the loop was closed in; override it in the Stability summary table</td></tr>
+  <tr><td>Page does not update after a new version</td><td>close the console window and start LinBench again (an old <code>LinBench.exe</code> may still be running)</td></tr>
+  <tr><td>Something fails during loading</td><td>the Run analysis page shows the failing step and a <i>Details</i> trace</td></tr>
+</table>
+<p class="muted">Validation results are in <code>VALIDATION.md</code>; run <code>python tests/run_all.py</code> (set <code>ROSCO_DIR</code> for the ROSCO-based checks).</p>
+</main>
+</div>
+</body>
+</html>

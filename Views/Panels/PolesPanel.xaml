@@ -1,0 +1,27 @@
+<UserControl x:Class="LinBench.Wpf.Views.Panels.PolesPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:controls="clr-namespace:LinBench.Wpf.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="900">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,12" Padding="12,10">
+            <TextBlock Text="Complex Plane: Open-Loop vs Closed-Loop Poles"
+                       FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" />
+        </Border>
+
+        <!-- Plot -->
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Padding="8">
+            <controls:WpfPlotView x:Name="PlotPoles" Title="Pole Map in Complex s-Plane"
+                                  XAxisLabel="Real Part σ [rad/s]" YAxisLabel="Imaginary Part jω [rad/s]" />
+        </Border>
+    </Grid>
+</UserControl>

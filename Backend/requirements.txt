@@ -1,0 +1,14 @@
+# LinBench runtime + build requirements (Python 3.12, Windows x64) - build.ps1 installs these into .venv-build.
+# Running from source with another Python needs only numpy, scipy and pyyaml (the page then opens in the browser).
+numpy==2.5.3
+scipy==1.18.1
+pyyaml==6.0.3
+pyinstaller==6.22.3
+# LinBench's own window: Qt WebEngine (a Chromium engine that is bundled, so no browser is needed) - as TuneMe
+PySide6-Essentials==6.12.0
+PySide6-Addons==6.12.0
+PySide6-WebEngine==6.12.0.140
+shiboken6==6.12.0
+# build tools only: icon, and the check that the build needs nothing installed
+pillow
+pefile
